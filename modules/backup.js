@@ -77,7 +77,7 @@ function backupAndDownload(backup, site) {
 	});
 
 	// Start the backup
-	backup.backup();
+	backup.backup(site.profile);
 }
 
 exports.backupAndDownload = backupAndDownload;

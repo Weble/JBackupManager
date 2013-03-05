@@ -34,6 +34,7 @@ exports.edit = function(req, res, next){
 	var k = req.params.k;
 	var sites = config.sites ? config.sites : {};
 	var site = sites[k];
+	var cron = new Date();
 
 	// new site ?
 	if (req.params.k == 'undefined' || !site) {
@@ -42,6 +43,16 @@ exports.edit = function(req, res, next){
 		site.keep = 3;
 		site.backup_count = 0;
 		k = '';
+	} else {
+		cron = new crontime(site.cron);
+		cron = cron.source.split(" ");
+		var cron_data = {
+			minute: cron[1],
+			hour: cron[2],
+			day: cron[3],
+			month: cron[4],
+			weekday: cron[5]
+		};
 	}
 
 	// Render the edit view
@@ -49,7 +60,8 @@ exports.edit = function(req, res, next){
 		k: k,
 	    site: site,
 	    title: "Site",
-	    header: "Site"
+	    header: "Site",
+	    cron: cron_data
 	  });
 };
 
@@ -82,6 +94,7 @@ exports.save = function(req, res, next) {
 				key: data.key,
 				cron: "00 " + cron.min + " " + cron.h + " " + cron.d + " " + cron.m + " " + cron.wd,
 				keep: data.keep ? data.keep : 3,
+				profile: data.profile ? data.profile : null,
 				backup_count: old_site ? old_site.backup_count : 0
 			};
 
