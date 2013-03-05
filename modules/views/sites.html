@@ -1,0 +1,104 @@
+<% include header.html %>
+
+<div class="container-fluid">
+	<div class="row-fluid">
+		<div class="row-fluid">
+			<div class="top-buttons pull-right">
+				<a href="#config" class="btn" data-toggle="modal">Configuration</a>
+				<a href="/add" class="btn btn-success">Add New Site</a>
+			</div>
+			<h1>Sites</h1>
+		</div>
+		<table class="table table-bordered table-striped">
+			<thead>
+				<th>Name</th>
+				<th>Url</th>
+				<th>Download Type</th>
+				<th>Download Folder</th>
+				<th>Next Backup</th>
+				<th></th>
+			</thead>
+			<tbody>
+				<% 
+				for (var k in sites) { 
+					var site = sites[k]; 
+					var download_type = 'Do Not Download';
+					if (site.s3) {
+						download_type = 'Amazon S3';
+					} else {
+						if (site.download) {
+							download_type = 'Direct Download';
+						}
+					}
+
+					var folder = site.download ? site.download.folder : '';
+					var next_backup = new crontime(site.cron);
+					next_backup = next_backup.sendAt();
+				%>
+				<tr>
+					<td>
+						<%= site.name %>	
+					</td>
+					<td>
+						<%= site.url %>
+					</td>
+					<td>
+						<%= download_type %>
+					</td>
+					<td>
+						<%= folder %>
+					</td>
+					<td>
+						<%= next_backup.toString('dd/MM/yyyy HH:mm') %>
+					</td>
+					<td class="span2">
+						<a href="/site/<%= k %>" class="btn btn-warning"><i class="icon-white icon-edit"></i></a>
+						<a href="/delete/<%= k %>" class="btn btn-danger" onclick="return confirm('Are you sure?');"><i class="icon-white icon-remove"></i></a>
+					</td>
+				</tr>
+				<% } %>
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<div class="modal hide fade" id="config">
+	<div class="modal-header">
+    	<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    	<h3>Global Configuration</h3>
+  	</div>
+  	<div class="modal-body">
+    	<form class="form form-horizontal" action="/saveconfig" method="post">
+    		<div class="control-group">
+    		    <label class="control-label" for="name">Download Folder</label>
+    		    <div class="controls">
+    		      	<input type="text" name="folder" id="folder" placeholder="Download Folder" value="<%= config.folder %>" />
+    		    </div>
+    		</div>
+    		<div class="control-group">
+    		    <label class="control-label" for="name">Amazon S3 Key</label>
+    		    <div class="controls">
+    		      	<input type="text" name="s3-key" id="folder" placeholder="S3 Key" value="<%= (config.s3) ? (config.s3.key ? config.s3.key : '') : '' %>" />
+    		    </div>
+    		</div>
+    		<div class="control-group">
+    		    <label class="control-label" for="name">Amazon S3 Secret</label>
+    		    <div class="controls">
+    		      	<input type="password" id="s3-secret" name="s3-secret" placeholder="S3 Secret" value="<%= (config.s3) ? (config.s3.secret ? config.s3.secret : '') : '' %>" />
+    		    </div>
+    		</div>
+    		<div class="control-group">
+    		    <label class="control-label" for="name">Amazon S3 Bucket</label>
+    		    <div class="controls">
+    		      	<input type="text" id="s3-bucket" name="s3-bucket" placeholder="S3 Bucket" value="<%= (config.s3) ? (config.s3.bucket ? config.s3.bucket : '') : '' %>" />
+    		    </div>
+    		</div>
+			<div class="form-actions">
+    		  	<a href="#" class="btn" data-dismiss="modal">Close</a>
+    		  	<button type="submit" class="btn btn-primary">Save</a>
+			</div>
+    	</form>
+  	</div>
+</div>
+
+<% include footer.html %>

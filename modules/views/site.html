@@ -1,0 +1,183 @@
+<% include header.html %>
+
+<% 
+var folder = site.download ? site.download.folder : '';
+var bucket = site.s3 ? site.s3.bucket : '';
+var s3_folder = site.s3 ? site.s3.folder : '';
+var name = site.name != 'New Site' ? site.name : '';
+%>
+
+<div class="container-fluid">
+	<div class="row-fluid">
+		<h1>Site: <%= site.name %></h1>
+		<form class="form form-horizontal" action="/save/<%= k %>" method="post">
+			<div class="span6">
+				<fieldset>
+					<legend>Basic Info</legend>
+					<div class="control-group">
+					    <label class="control-label" for="name">Name</label>
+					    <div class="controls">
+					      	<input type="text" id="name" name="name" placeholder="Name" value="<%= name %>" />
+					    </div>
+					</div>
+					<div class="control-group">
+					    <label class="control-label" for="url">Url</label>
+					    <div class="controls">
+					      	<input type="text" id="url" name="url" placeholder="Url" value="<%= site.url ? site.url : '' %>" />
+					    </div>
+					</div>
+					<div class="control-group">
+					    <label class="control-label" for="name">Key</label>
+					    <div class="controls">
+					      	<input type="password" id="key" name="key" placeholder="Key" value="<%= site.key ? site.key : ''%>" />
+					    </div>
+					</div>
+					<div class="control-group">
+					    <label class="control-label" for="download-type">Download Type</label>
+					    <div class="controls">
+					      	<select name="download-type" id="download-type">
+								<option value="s3" <% if (site.s3){ %> selected="selected" <% } %>>Amazon S3</option>
+					      		<option value="direct" <% if (!site.s3 && site.download){ %> selected="selected" <% } %>>Direct Download</option>
+					      		<option value="false" <% if (!site.s3 && !site.download){ %> selected="selected" <% } %>>Do not Download</option>
+					      	</select>
+					    </div>
+					</div>
+					<div class="s3 collapse <% if (site.s3){ %>in<% } else {%>out<% } %>">
+						<div class="control-group">
+						    <label class="control-label" for="name">Bucket</label>
+						    <div class="controls">
+						      	<input type="text" name="bucket" placeholder="Bucket" value="<%= bucket %>" />
+						    </div>
+						</div>
+						<div class="control-group">
+						    <label class="control-label" for="name">S3 Folder</label>
+						    <div class="controls">
+						      	<input type="text" name="s3folder" placeholder="S3 Folder" value="<%= s3_folder %>" />
+						    </div>
+						</div>
+					</div>
+					<div class="download collapse <% if (!site.s3 && !site.download){ %>out<% } else {%>in<% } %>">
+						<div class="control-group">
+						    <label class="control-label" for="name">Download Folder</label>
+						    <div class="controls">
+						      	<input type="text" id="download-folder" name="folder" placeholder="Download Folder" value="<%= folder %>" />
+						    </div>
+						</div>
+						<div class="control-group">
+					    <label class="control-label" for="name">Quota:</label>
+					    <div class="controls">
+					      	<input type="text" id="keep" name="keep" placeholder="1" value="<%= site.keep ? site.keep : '3' %>" />
+					    </div>
+					</div>
+					</div>
+				</fieldset>
+			</div>
+			<div class="span6">
+				<fieldset>
+					<legend>Cron Job</legend>
+					<div class="control-group">
+					    <label class="control-label" for="name">Day of the Week</label>
+					    <div class="controls">
+					      	<select name="cron[wd]">
+					      		<option value="*">Every Day</option>
+								<option value="1">Monday</option>
+					      		<option value="2">Tuesday</option>
+					      		<option value="3">Wednesday</option>
+					      		<option value="4">Thursday</option>
+					      		<option value="5">Friday</option>
+					      		<option value="6">Saturday</option>
+					      		<option value="0">Sunday</option>
+					      	</select>
+					    </div>
+					</div>
+					<div class="control-group">
+					    <label class="control-label" for="name">Month</label>
+					    <div class="controls">
+					      	<select name="cron[m]">
+					      		<option value="*">Every Month</option>
+								<option value="1">January</option>
+					      		<option value="2">February</option>
+					      		<option value="3">March</option>
+					      		<option value="4">April</option>
+					      		<option value="5">May</option>
+					      		<option value="6">June</option>
+					      		<option value="7">July</option>
+					      		<option value="8">August</option>
+					      		<option value="9">September</option>
+					      		<option value="10">October</option>
+					      		<option value="11">November</option>
+					      		<option value="12">December</option>
+					      	</select>
+					    </div>
+					</div>
+					<div class="control-group">
+					    <label class="control-label" for="name">Day</label>
+					    <div class="controls">
+					      	<select name="cron[d]">
+					      		<option value="*">Every Day</option>
+					      		<% for (var i = 1; i <= 31; i++) { %>
+					      		<option value="<%= i %>"><%= i %></option>
+					      		<% } %>
+					      	</select>
+					    </div>
+					</div>
+					<div class="control-group">
+					    <label class="control-label" for="name">Hour</label>
+					    <div class="controls">
+					      	<select name="cron[h]">
+					      		<% for (var i = 0; i <= 23; i++) { %>
+					      		<option value="<%= i %>"><%= i %></option>
+					      		<% } %>
+					      		<option value="*">Every Hour (ARE YOU SURE?)</option>
+					      	</select>
+					    </div>
+					</div>
+					<div class="control-group">
+					    <label class="control-label" for="name">Minute</label>
+					    <div class="controls">
+					      	<select name="cron[min]">
+					      		<% for (var i = 0; i <= 59; i++) { %>
+					      		<option value="<%= i %>"><%= i %></option>
+					      		<% } %>
+					      		<option value="*">Every Minute (DANGEROUS)</option>
+					      	</select>
+					    </div>
+					</div>
+				</fieldset>
+			</div>
+			<div class="span10 form-actions">
+				<button type="submit" class="btn btn-primary">Save</button>
+				<a class="btn" href="/">Cancel</a>
+			</div>
+		</form>
+	</div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function(){
+	$("#download-type").change(function(){
+		if ($(':selected', $(this)).val() == 's3') {
+			$('.s3').collapse('show');
+			$('.download').collapse('show');
+		} else {
+			$('.s3').collapse('hide');
+			if ($(':selected', $(this)).val() == 'direct') {
+				$('.download').collapse('show');
+			} else {
+				$('.download').collapse('hide');
+			}
+		}
+	});
+
+	$("#download-type").change(function(){
+		var val = $(':selected', $(this)).val();
+		if (val == 's3' || val == 'direct') {
+			$('.download').collapse('show');
+		} else {
+			$('.download').collapse('hide');
+		}
+	});
+});
+</script>
+
+<% include footer.html %>

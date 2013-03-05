@@ -1,0 +1,26 @@
+{
+  "name": "JBackupManager",
+  "version": "0.1.0",
+  "description": "Joomla Backup Manager",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": "",
+  "author": "Weble",
+  "license": "GPLv3",
+  "readmeFilename": "README.md",
+  "dependencies": {
+    "akeebabackup": "0.1.x",
+    "commander": "1.1.x",
+    "knox": "0.5.x",
+    "config": "0.4.x",
+    "s3": "0.0.x",
+    "node-fs": "0.1.x",
+    "cron": "1.0.x",
+    "express": "3.x",
+    "ejs": "0.8.x",
+    "node.extend": "1.0.x",
+    "datejs": "0.0.x"
+  }
+}

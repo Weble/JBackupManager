@@ -1,0 +1,10 @@
+{
+	"sites": {
+	},
+	"folder": "./backups",
+	"s3": {
+		"key": "",
+  		"secret": "",
+  		"bucket": ""
+	}
+}
