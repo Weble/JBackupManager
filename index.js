@@ -11,6 +11,18 @@ try {
 		if (!fs.existsSync('./config/config.json')){
 			fs.writeFileSync('./config/config.json', '{}');
 		}
+		if (!fs.existsSync('./config/default.json')){
+			var cfg = {
+				sites: {},
+				folder: "./backups",
+				s3: {
+					key: "",
+			  		secret: "",
+			  		bucket: ""
+				}
+			};
+			fs.writeFileSync('./config/default.json', JSON.stringify(cfg, null, 4));
+		}
 	}
 	
 	var readConfig = require('./modules/config.js');
