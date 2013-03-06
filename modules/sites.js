@@ -34,8 +34,14 @@ exports.edit = function(req, res, next){
 	var k = req.params.k;
 	var sites = config.sites ? config.sites : {};
 	var site = sites[k];
-	var cron = new Date();
-
+	var cron_data = {
+		minute: '0',
+		hour: '0',
+		day: '*',
+		month: '*',
+		weekday: '*'
+	};
+	
 	// new site ?
 	if (req.params.k == 'undefined' || !site) {
 		site = {};
@@ -46,7 +52,7 @@ exports.edit = function(req, res, next){
 	} else {
 		cron = new crontime(site.cron);
 		cron = cron.source.split(" ");
-		var cron_data = {
+		cron_data = {
 			minute: cron[1],
 			hour: cron[2],
 			day: cron[3],
