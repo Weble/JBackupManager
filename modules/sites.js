@@ -263,6 +263,59 @@ exports.remove = function(req, res, next) {
 	}
 };
 
+exports.cleanup =  function(req, res, next) {
+	var folder = req.body.folder;
+	var config = storage.getItem('config');
+	var target = config.webroot + '/' + folder + '/';
+
+	console.log(target);
+
+	var deleteFolderRecursive = function(path) {
+		  if( fs.existsSync(path) ) {
+		    fs.readdirSync(path).forEach(function(file,index){
+		      var curPath = path + "/" + file;
+		      if(fs.statSync(curPath).isDirectory()) { // recurse
+		        deleteFolderRecursive(curPath);
+		      } else { // delete file
+		        fs.unlinkSync(curPath);
+		      }
+		    });
+		    fs.rmdirSync(path);
+		  }
+		};
+
+	deleteFolderRecursive(target);
+}
+
+exports.test = function(req, res, next) {
+
+	var config = storage.getItem('config');
+
+	var testfolder = req.query.testfolder;
+	var site_id = req.query.testid;
+
+	var sites = storage.getItem('sites');
+	var site = sites[site_id];
+
+	var backup = config.folder + '/' + site.download.folder + '/' + site.latest_file;
+	var target = config.webroot + '/' + testfolder + '/';
+
+
+	// Create directory if necessary
+	fs.mkdir(target, 0755, true, function(){
+
+		// Copy backup and kickstart.php
+		fs.createReadStream(backup).pipe(fs.createWriteStream(target + path.basename(backup)));
+		fs.createReadStream(__dirname + '/assets/kickstart.php').pipe(fs.createWriteStream(target + 'kickstart.php'));
+
+		// Redirect
+		res.writeHead(302, {
+	      'Location': config.webrooturl + '/' + testfolder + '/kickstart.php'
+	    });
+	    res.end();
+	});
+}
+
 /**
  * Save the global config
  * @param  {object}   req  The request
@@ -277,6 +330,8 @@ exports.saveconfig = function(req, res, next) {
 
 		// Config options
 		config.folder = data.folder;
+		config.webroot = data.webroot;
+		config.webrooturl = data.webrooturl;
 		
 		if (data["s3-bucket"] && data["s3-key"] && data["s3-secret"]) {
 			config.s3 = {

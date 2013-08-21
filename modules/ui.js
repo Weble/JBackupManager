@@ -28,6 +28,8 @@ function run() {
 	var obj = require('./sites.js');
 
 	// Routes
+	app.post('/cleanup', obj.cleanup);
+	app.get('/test', obj.test);
 	app.post('/site/:k/backup', obj.backup);
 	app.post('/site/:k/download', obj.download);
 	app.get('/site/:k', obj.edit);

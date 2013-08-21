@@ -17,7 +17,7 @@
 				<th>Download Folder</th>
 				<th>Status</th>
 				<th>Next Backup</th>
-				<th></th>
+				<th>Actions</th>
 			</thead>
 			<tbody>
 				<% 
@@ -60,10 +60,11 @@
 					</td>
 					<td class="span2">
 						<div class="btn-group">
-							<a href="/site/<%= k %>" class="btn btn-warning"><i class="icon-white icon-edit"></i></a>
-							<a href="/delete/<%= k %>" class="btn btn-danger" onclick="return confirm('Are you sure?');"><i class="icon-white icon-remove"></i></a>
-							<a href="#" class="download btn btn-info" data-url="/site/<%= k %>/download"><i class="icon-white icon-download-alt"></i></a>
-							<a href="#" class="backup btn btn-info" data-url="/site/<%= k %>/backup"><i class="icon-white icon-play"></i></a>
+							<a href="/site/<%= k %>" class="btn btn-warning" data-toggle="tooltip" title="Edit" data-container="body"><i class="icon-white icon-edit"></i></a>
+							<a href="/delete/<%= k %>" class="btn btn-danger" data-toggle="tooltip" title="Delete" data-container="body" onclick="return confirm('Are you sure?');"><i class="icon-white icon-remove"></i></a>
+							<a href="#" class="download btn btn-info" data-url="/site/<%= k %>/download" data-toggle="tooltip" title="Download" data-container="body"><i class="icon-white icon-download-alt"></i></a>
+							<a href="#" class="backup btn btn-primary" data-url="/site/<%= k %>/backup" data-toggle="tooltip" title="Backup" data-container="body"><i class="icon-white icon-play"></i></a>
+							<a href="#test" class="test btn btn-success" data-key="<%= k %>" data-toggle="tooltip" title="Test" data-container="body" data-toggle="modal"><i class="icon-white icon-refresh"></i></a>
 						</div>
 					</td>
 				</tr>
@@ -75,6 +76,9 @@
 
 <script type="text/javascript">
 $(document).ready(function(){
+
+	$('[data-toggle="tooltip"]').tooltip();
+
 	$('.download').click(function(){
 		var tr = $(this).parents('tr');
 		var status = $('.status', tr);
@@ -91,6 +95,22 @@ $(document).ready(function(){
 		$('.progress', status).show();
 		var url = $(this).data('url');
 		$.post(url);
+	});
+
+	$('.test').click(function(){
+		$('#testid').val($(this).data('key'));
+		$('#test').modal();
+		$('#test .submit').click(function(){
+			$(this).hide();
+			$('#test .cleanup').show();
+		});
+	});
+
+	$('#test .cleanup').click(function(){
+		$.post('/cleanup', {folder: $('#testfolder').val()});
+		$(this).hide();
+		$('#test .submit').show();
+		$('#test').modal('hide');
 	});
 
 	var socket = io.connect('http://' + window.location.host);
@@ -131,6 +151,29 @@ $(document).ready(function(){
 
 </script>
 
+<div class="modal hide fade" id="test">
+	<div class="modal-header">
+    	<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    	<h3>Test Backup</h3>
+  	</div>
+  	<div class="modal-body">
+    	<form class="form form-horizontal" action="/test" method="get" target="_blank">
+    		<div class="control-group">
+    		    <label class="control-label" for="name">Test Folder</label>
+    		    <div class="controls">
+    		      	<input type="text" name="testfolder" id="testfolder" placeholder="Test Folder" value="" />
+    		      	<input type="hidden" name="testid" id="testid" value="" />
+    		    </div>
+    		</div>
+			<div class="form-actions">
+    		  	<a href="#" class="btn" data-dismiss="modal">Close</a>
+    		  	<button type="submit" class="btn btn-primary submit">Test</a>
+		  		<button type="button" class="btn btn-primary cleanup" style="display:none;">Cleanup</a>
+			</div>
+    	</form>
+  	</div>
+</div>
+
 <div class="modal hide fade" id="config">
 	<div class="modal-header">
     	<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -142,6 +185,18 @@ $(document).ready(function(){
     		    <label class="control-label" for="name">Download Folder</label>
     		    <div class="controls">
     		      	<input type="text" name="folder" id="folder" placeholder="Download Folder" value="<%= config.folder %>" />
+    		    </div>
+    		</div>
+    		<div class="control-group">
+    		    <label class="control-label" for="webroot">Web Root for Tests</label>
+    		    <div class="controls">
+    		      	<input type="text" name="webroot" id="webroot" placeholder="/path/to/web/root" value="<%= config.webroot %>" />
+    		    </div>
+    		</div>
+    		<div class="control-group">
+    		    <label class="control-label" for="webrooturl">Web Root Url</label>
+    		    <div class="controls">
+    		      	<input type="text" name="webrooturl" id="webrooturl" placeholder="http://localhost/" value="<%= config.webrooturl %>" />
     		    </div>
     		</div>
     		<div class="control-group">

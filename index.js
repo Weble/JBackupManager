@@ -11,7 +11,8 @@ try {
 
 	if (!storage.getItem('config')) {
 		var config = {
-			folder: __dirname + '/backups'
+			folder: __dirname + '/backups',
+			webroot: '/var/www'
 		};
 
 		storage.setItem('config', config);

@@ -76,6 +76,7 @@ function download(backup_id, site, archive) {
 		aws.downloadBackup(site, archive, function(){
 			// Increase backup count to respect the quota
 			site.backup_count = site.backup_count + 1;
+			site.latest_file = archive;
 			// Save the count
 			sites[site.k] = site;
 			storage.setItem('sites', sites);
@@ -88,6 +89,7 @@ function download(backup_id, site, archive) {
 			// File names
 			var file = config.folder + '/' + site.download.folder + '/' + filename;
 			var folder = path.normalize(path.dirname(file));
+			site.latest_file = filename;
 
 			// Create directory if necessary
 			fs.mkdir(folder, 0755, true, function(){
