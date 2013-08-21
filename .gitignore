@@ -17,10 +17,5 @@ results
 
 npm-debug.log
 node_modules
-
-###########
-# OTHER   #
-###########
-
-config/runtime.json
-config/config.json
+persist
+backups

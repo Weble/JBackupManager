@@ -1,8 +1,9 @@
 var knox = require('knox');
 var s3 = require('s3');
-var config = require('config');
 var path = require('path');
 var fs = require('node-fs');
+var storage = require('node-persist');
+var _ = require('underscore');
 
 /**
  * Download a backup file from Amazone S3
@@ -12,6 +13,8 @@ var fs = require('node-fs');
  */
 function downloadBackup(site, archive, callback) {
 	
+	var config = storage.getItem('config');
+
 	// Knox Amazon S3 Client
 	var client = knox.createClient({
 		key: config.s3.key,
@@ -27,30 +30,83 @@ function downloadBackup(site, archive, callback) {
 	var folder = site.s3.folder + '/';
 	var download_folder = config.folder + '/' + site.download.folder + '/';
 
-	// List all the files matching the folder + archive name
-	client.list({prefix: folder + prefix}, function(err, data){
-		if (!err) {
-			if (data.Contents) {
-				// Download each file locally
-				for (var k in data.Contents){
-					var remote = data.Contents[k].Key;
-					var file = path.basename(remote);
+	// Create directory if necessary
+	fs.mkdir(download_folder, 0755, true, function(){
+		// List all the files matching the folder + archive name
+		client.list({prefix: folder + prefix}, function(err, data){
+			if (!err) {
+				if (data.Contents) {
+					
+					var done = 0;
+					var total_size = 0;
+					var total_done = 0;
 
-					// Create the directory if it doesn't exist
-					fs.mkdir(folder, 0755, true, function(){
-						var downloader = s3client.download(remote, download_folder + file);
-						downloader.on('progress', function(amountDone, amountTotal) {
-							console.log("progress", amountDone, amountTotal);
-						});
-						downloader.on('end', function() {
-							console.log("done");
-							callback();
-						});
-					});
+					// Total Size
+					// Download each file locally
+					for (var k in data.Contents){
+						total_size = total_size + data.Contents[k].Size;
+					}
+
+					// Download each file locally
+					var k = 0;
+					downloadPart(k, data, done, total_size, total_done, s3client, site);
 				}
+
+			} else {
+				console.log(err);
 			}
+		});
+	});
+}
+
+function downloadPart(k, data, done, total_size, total_done, s3client, site) {
+	var config = storage.getItem('config');
+	var remote = data.Contents[k].Key;
+	var file = path.basename(remote);
+	var total_parts = data.Contents.length;
+	var download_folder = config.folder + '/' + site.download.folder + '/';
+
+	// Create the directory if it doesn't exist
+	var downloader = s3client.download(remote, download_folder + file);
+	downloader.on('progress', function(amountDone, amountTotal) {
+		var info = {
+			key: site.k,
+			received: total_done + amountDone,
+			total: total_size,
+			percentage: (((total_done + amountDone) * 100) / total_size)
+		};
+		
+		_.each(global.sockets, function(socket){
+			socket.emit('download-step', info);
+		});
+	});
+	
+	downloader.on('end', function() {
+		done = done + 1;
+		if (done >= total_parts) {
+			_.each(global.sockets, function(socket){
+				var info = {
+					key: site.k
+				};
+				socket.emit('download-completed', info);
+			});
 		} else {
-			console.log(err);
+			total_done = total_done + data.Contents[k].Size;
+			var info = {
+				key: site.k,
+				received: total_done,
+				total: total_size,
+				percentage: ((total_done * 100) / total_size)
+			};
+			
+			_.each(global.sockets, function(socket){
+				socket.emit('download-step', info);
+			});
+
+			k = k + 1;
+			if (k < data.Contents.length) {
+				downloadPart(k, data, done, total_size, total_done, s3client, site);
+			}
 		}
 	});
 }

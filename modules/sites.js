@@ -1,8 +1,14 @@
-var config = require('config');
 var fs = require('node-fs');
 var crontime = require('cron').CronTime;
 var date = require('datejs');
-var saveconfig = require('./save.js');
+var storage = require('node-persist');
+var akeeba = require('akeebabackup');
+var _ = require('underscore');
+var crons = require('./cronjobs.js');
+var backup = require('./backup.js');
+var path = require('path');
+
+storage.initSync();
 
 /**
  * List the websites
@@ -11,7 +17,8 @@ var saveconfig = require('./save.js');
  * @param  {Function} next The next call
  */
 exports.list = function(req, res, next){
-	var sites = config.sites ? config.sites : {};
+	var sites = storage.getItem('sites');
+	var config = storage.getItem('config');
 
 	// Render the sites view
 	res.render('sites', {
@@ -25,6 +32,63 @@ exports.list = function(req, res, next){
 };
 
 /**
+ * Trigger a manual Backup
+ * @param  {object}   req  The request
+ * @param  {object}   res  The response object
+ * @param  {Function} next The next call
+ */
+exports.backup = function(req, res, next){
+	var k = req.params.k;
+	var sites = storage.getItem('sites');
+	var site = sites[k];
+	var config = storage.getItem('config');
+
+	site.k = k;
+	
+	var bkp = new akeeba(site.url, site.key);
+	backup.backupAndDownload(bkp, site);
+
+	// Redirect
+	res.writeHead(302, {
+      'Location': '/'
+    });
+    res.end();
+};
+
+/**
+ * Download a Website Backup
+ * @param  {object}   req  The request
+ * @param  {object}   res  The response object
+ * @param  {Function} next The next call
+ */
+exports.download = function(req, res, next){
+	var k = req.params.k;
+	var sites = storage.getItem('sites');
+	var site = sites[k];
+	var config = storage.getItem('config');
+
+	site.k = k;
+	
+	var bkp = new akeeba(site.url, site.key);
+	bkp.listBackups(function(list){
+		downloaded = false;
+		_.each(list, function(data){
+			if (!downloaded && data.status == 'complete' && data.tag != 'restorepoint') {
+				downloaded = true;
+				var archive = data.archivename;
+				backup.download(data.id, site, archive);
+			}
+		});
+	});
+
+	// Redirect
+	res.writeHead(302, {
+      'Location': '/'
+    });
+    res.end();
+};
+
+/**
  * Edit a Website
  * @param  {object}   req  The request
  * @param  {object}   res  The response object
@@ -32,8 +96,9 @@ exports.list = function(req, res, next){
  */
 exports.edit = function(req, res, next){
 	var k = req.params.k;
-	var sites = config.sites ? config.sites : {};
+	var sites = storage.getItem('sites');
 	var site = sites[k];
+	
 	var cron_data = {
 		minute: '0',
 		hour: '0',
@@ -43,11 +108,12 @@ exports.edit = function(req, res, next){
 	};
 	
 	// new site ?
-	if (req.params.k == 'undefined' || !site) {
+	if (k == 'undefined' || !site) {
 		site = {};
 		site.name = 'New Site';
 		site.keep = 3;
 		site.backup_count = 0;
+		site.profiles = []
 		k = '';
 	} else {
 		cron = new crontime(site.cron);
@@ -59,16 +125,21 @@ exports.edit = function(req, res, next){
 			month: cron[4],
 			weekday: cron[5]
 		};
+
+		if (!site.profiles) {
+			site.profiles = [];
+		}
 	}
 
 	// Render the edit view
 	res.render('site', {
-		k: k,
+		id: k,
 	    site: site,
 	    title: "Site",
 	    header: "Site",
-	    cron: cron_data
-	  });
+	    cron: cron_data,
+	    _: _
+  	});
 };
 
 /**
@@ -83,7 +154,8 @@ exports.save = function(req, res, next) {
 	if (data) {
 		if (data.name) {
 			var cron = data.cron;
-			var sites = config.sites ? config.sites : [];
+			var sites = storage.getItem('sites');
+			var config = storage.getItem('config');
 		
 			// New key
 			var k = req.params.k;
@@ -101,7 +173,8 @@ exports.save = function(req, res, next) {
 				cron: "00 " + cron.min + " " + cron.h + " " + cron.d + " " + cron.m + " " + cron.wd,
 				keep: data.keep ? data.keep : 3,
 				profile: data.profile ? data.profile : null,
-				backup_count: old_site ? old_site.backup_count : 0
+				backup_count: old_site ? old_site.backup_count : 0,
+				profiles: []
 			};
 
 			// Save download option based on type
@@ -121,10 +194,35 @@ exports.save = function(req, res, next) {
 					};
 					break;
 			}
+
+			// Get Profiles, if possible
+			try {
+				var backup = new akeeba(site.url, site.key);
+				var key = k;
+				backup.getProfiles(function(data){
+					
+					if (data) {
+						_.each(data, function(i){
+							if (i.id) {
+								sites[key].profiles[i.id] = i.name;
+							}
+						});
+						
+						// Save config
+						storage.setItem('sites', sites);
+					}
+
+				});
+			} catch(e) {
+
+			}
+
 		
 			// Save config
-			config.sites[k] = site;
-			saveconfig();
+			sites[k] = site;
+			storage.setItem('sites', sites);
+
+			crons.init();
 
 			// Redirect
 			res.writeHead(302, {
@@ -149,9 +247,11 @@ exports.remove = function(req, res, next) {
 	var k = req.params.k;
 	if(k != 'undefined' && k) {
 
+		var sites = storage.getItem('sites');
+
 		// Delete and save config
-		delete(config.sites[k]);
-		saveconfig();
+		delete(sites[k]);
+		storage.setItem('sites', sites);
 
 		// Redirect
 		res.writeHead(302, {
@@ -173,6 +273,8 @@ exports.saveconfig = function(req, res, next) {
 	var data = req.body;
 	if (data) {
 
+		var config = storage.getItem('config');
+
 		// Config options
 		config.folder = data.folder;
 		
@@ -185,7 +287,7 @@ exports.saveconfig = function(req, res, next) {
 		}
 
 		// Save
-		saveconfig();
+		storage.setItem('config', config);
 
 		// Redirect
         res.writeHead(302, {

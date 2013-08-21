@@ -10,7 +10,7 @@ var name = site.name != 'New Site' ? site.name : '';
 <div class="container-fluid">
 	<div class="row-fluid">
 		<h1>Site: <%= site.name %></h1>
-		<form class="form form-horizontal" action="/save/<%= k %>" method="post">
+		<form class="form form-horizontal" action="/save/<%= id %>" method="post">
 			<div class="span6">
 				<fieldset>
 					<legend>Basic Info</legend>
@@ -35,7 +35,15 @@ var name = site.name != 'New Site' ? site.name : '';
 					<div class="control-group">
 					    <label class="control-label" for="name">Profile</label>
 					    <div class="controls">
-					      	<input type="text" id="profile" name="profile" placeholder="Profile" value="<%= site.profile ? site.profile : ''%>" />
+					    	<% if(site.profiles.length) { %>
+					    		<select name="profile" id="profile">
+					    		<% _.each(site.profiles, function(profile, k) { %>
+					    			<option value="<%= site.profile == k ? 'selected="selected"' : '' %>"><%= profile %></option>
+					    		<% }); %>
+					    		</select>
+					    	<% } else { %>
+					    		<input type="text" id="profile" name="profile" placeholder="Profile" value="<%= site.profile ? site.profile : ''%>" />
+					    	<% } %>
 					    </div>
 					</div>
 					<div class="control-group">
@@ -58,7 +66,7 @@ var name = site.name != 'New Site' ? site.name : '';
 						<div class="control-group">
 						    <label class="control-label" for="name">S3 Folder</label>
 						    <div class="controls">
-						      	<input type="text" name="s3folder" placeholder="S3 Folder" value="<%= s3_folder %>" />
+						      	<input type="text" name="s3-folder" placeholder="S3 Folder" value="<%= s3_folder %>" />
 						    </div>
 						</div>
 					</div>
@@ -164,13 +172,10 @@ $(document).ready(function(){
 	$("#download-type").change(function(){
 		if ($(':selected', $(this)).val() == 's3') {
 			$('.s3').collapse('show');
-			$('.download').collapse('show');
 		} else {
-			$('.s3').collapse('hide');
-			if ($(':selected', $(this)).val() == 'direct') {
-				$('.download').collapse('show');
-			} else {
-				$('.download').collapse('hide');
+			console.log('hide');
+			if ($('.s3').hasClass('in')){
+				$('.s3').collapse('hide');
 			}
 		}
 	});

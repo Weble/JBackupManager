@@ -15,6 +15,7 @@
 				<th>Url</th>
 				<th>Download Type</th>
 				<th>Download Folder</th>
+				<th>Status</th>
 				<th>Next Backup</th>
 				<th></th>
 			</thead>
@@ -35,7 +36,7 @@
 					var next_backup = new crontime(site.cron);
 					next_backup = next_backup.sendAt();
 				%>
-				<tr>
+				<tr id="site-<%= k %>">
 					<td>
 						<%= site.name %>	
 					</td>
@@ -48,12 +49,22 @@
 					<td>
 						<%= folder %>
 					</td>
+					<td class="status">						
+						<span>Idle</span>
+						<div class="progress progress-striped active" style="display:none;">
+						  	<div class="bar" style="width: 0%;"></div>
+						</div>
+					</td>
 					<td>
 						<%= next_backup.toString('dd/MM/yyyy HH:mm') %>
 					</td>
 					<td class="span2">
-						<a href="/site/<%= k %>" class="btn btn-warning"><i class="icon-white icon-edit"></i></a>
-						<a href="/delete/<%= k %>" class="btn btn-danger" onclick="return confirm('Are you sure?');"><i class="icon-white icon-remove"></i></a>
+						<div class="btn-group">
+							<a href="/site/<%= k %>" class="btn btn-warning"><i class="icon-white icon-edit"></i></a>
+							<a href="/delete/<%= k %>" class="btn btn-danger" onclick="return confirm('Are you sure?');"><i class="icon-white icon-remove"></i></a>
+							<a href="#" class="download btn btn-info" data-url="/site/<%= k %>/download"><i class="icon-white icon-download-alt"></i></a>
+							<a href="#" class="backup btn btn-info" data-url="/site/<%= k %>/backup"><i class="icon-white icon-play"></i></a>
+						</div>
 					</td>
 				</tr>
 				<% } %>
@@ -61,6 +72,64 @@
 		</table>
 	</div>
 </div>
+
+<script type="text/javascript">
+$(document).ready(function(){
+	$('.download').click(function(){
+		var tr = $(this).parents('tr');
+		var status = $('.status', tr);
+		$('span', status).html('Downloading');
+		$('.progress', status).show();
+		var url = $(this).data('url');
+		$.post(url);
+	});
+
+	$('.backup').click(function(){
+		var tr = $(this).parents('tr');
+		var status = $('.status', tr);
+		$('span', status).html('Backup...');
+		$('.progress', status).show();
+		var url = $(this).data('url');
+		$.post(url);
+	});
+
+	var socket = io.connect('http://' + window.location.host);
+	socket.on('download-step', function (data) {
+		var received = (data.received / 1048576 ).toFixed(2);
+		var total = (data.total / 1048576 ).toFixed(2);
+
+		var tr = $('#site-' + data.key);
+		var status = $('.status', tr);
+
+		$('.progress', status).show();
+		$('span', status).html('Downloading ('+received +'MB of '+total +'MB)');
+	    $('.progress .bar', status).css('width', data.percentage + '%');
+ 	});
+
+ 	socket.on('download-completed', function (data) {
+		$('span', status).html('Idle');
+		$('.progress .bar', status).css('width', '0%');
+	    $('.progress', status).hide();
+ 	});
+
+ 	socket.on('backup-step', function (data) {
+		var tr = $('#site-' + data.key);
+		var status = $('.status', tr);
+
+		$('.progress', status).show();
+		$('span', status).html('Backup...');
+	    $('.progress .bar', status).css('width', data.percentage + '%');
+ 	});
+
+ 	socket.on('backup-completed', function (data) {
+		$('span', status).html('Idle');
+	    $('.progress', status).hide();
+	    $('.progress .bar', status).css('width', '0%');
+ 	});
+});
+
+
+</script>
 
 <div class="modal hide fade" id="config">
 	<div class="modal-header">
