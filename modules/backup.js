@@ -18,38 +18,42 @@ function backupAndDownload(backup, site) {
 	var config = storage.getItem('config');
 	var sites = storage.getItem('sites');
 
-	// When the backup is completed, download the file if necessary
-	backup.on('completed', function(data){
-		download(backup_id, site, archive);
-	});
+	try {
+		// When the backup is completed, download the file if necessary
+		backup.on('completed', function(data){
+			download(backup_id, site, archive);
+		});
 
-	// Save backup id and file name for the download operation
-	backup.on('started', function(data){
-		if (data) {
-			if (data.data) {
-				backup_id = data.data.BackupID;
-				archive = data.data.Archive;
+		// Save backup id and file name for the download operation
+		backup.on('started', function(data){
+			if (data) {
+				if (data.data) {
+					backup_id = data.data.BackupID;
+					archive = data.data.Archive;
+				}
 			}
-		}
-	});
+		});
 
-	// Save backup id and file name for the download operation
-	backup.on('step', function(data){
-		if (data) {
-			if (data.data) {
-				_.each(global.sockets, function(socket){
-					var info = {
-						percentage: data.data.Progress,
-						key: site.k
-					};
-					socket.emit('backup-step', info);
-				});
+		// Save backup id and file name for the download operation
+		backup.on('step', function(data){
+			if (data) {
+				if (data.data) {
+					_.each(global.sockets, function(socket){
+						var info = {
+							percentage: data.data.Progress,
+							key: site.k
+						};
+						socket.emit('backup-step', info);
+					});
+				}
 			}
-		}
-	});
+		});
 
-	// Start the backup
-	backup.backup(site.profile);
+		// Start the backup
+		backup.backup(site.profile);
+	} catch(e) {
+		console.error(e);
+	}
 }
 
 function download(backup_id, site, archive) {
