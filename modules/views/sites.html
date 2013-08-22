@@ -16,6 +16,7 @@
 				<th>Download Type</th>
 				<th>Download Folder</th>
 				<th>Status</th>
+				<th>Last Backup</th>
 				<th>Next Backup</th>
 				<th>Actions</th>
 			</thead>
@@ -35,6 +36,13 @@
 					var folder = site.download ? site.download.folder : '';
 					var next_backup = new crontime(site.cron);
 					next_backup = next_backup.sendAt();
+
+					site.last_backup = new Date(site.last_backup);
+					if (!site.last_backup || site.last_backup == 'Invalid Date') {
+						site.last_backup = '---';
+					} else {
+						site.last_backup = site.last_backup.toString('dd/MM/yyyy HH:mm');
+					}
 				%>
 				<tr id="site-<%= k %>">
 					<td>
@@ -54,6 +62,9 @@
 						<div class="progress progress-striped active" style="display:none;">
 						  	<div class="bar" style="width: 0%;"></div>
 						</div>
+					</td>
+					<td class="last-backup">
+						<%= site.last_backup %>
 					</td>
 					<td>
 						<%= next_backup.toString('dd/MM/yyyy HH:mm') %>
@@ -127,9 +138,15 @@ $(document).ready(function(){
  	});
 
  	socket.on('download-completed', function (data) {
+ 		var tr = $('#site-' + data.key);
+		var status = $('.status', tr);
+
 		$('span', status).html('Idle');
 		$('.progress .bar', status).css('width', '0%');
 	    $('.progress', status).hide();
+
+	    var date = (new Date(data.last_backup)).toString('dd/MM/yyyy HH:mm');
+	    $('.last-backup', status).html(date);
  	});
 
  	socket.on('backup-step', function (data) {
@@ -142,9 +159,15 @@ $(document).ready(function(){
  	});
 
  	socket.on('backup-completed', function (data) {
+ 		var tr = $('#site-' + data.key);
+		var status = $('.status', tr);
+
 		$('span', status).html('Idle');
 	    $('.progress', status).hide();
 	    $('.progress .bar', status).css('width', '0%');
+
+	     var date = (new Date(data.last_backup)).toString('dd/MM/yyyy HH:mm');
+	    $('.last-backup', tr).html(date);
  	});
 });
 

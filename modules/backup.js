@@ -22,6 +22,17 @@ function backupAndDownload(backup, site) {
 	try {
 		// When the backup is completed, download the file if necessary
 		backup.on('completed', function(data){
+			
+			// Save last backup time
+			site.last_backup = (new Date()).getTime();
+			sites[site.k] = site;
+			storage.setItem('sites', sites);
+
+			_.each(global.sockets, function(socket){
+				socket.emit('backup-completed', {last_backup: site.last_backup, key: site.k});
+			});
+
+			// launch download
 			download(backup_id, site, archive);
 		});
 
@@ -132,7 +143,8 @@ function download(backup_id, site, archive) {
 						// Notify the UI with Socket.IO
 						_.each(global.sockets, function(socket){
 							var info = {
-								key: site.k
+								key: site.k,
+								last_backup: site.last_backup
 							};
 							socket.emit('download-completed', info);
 						});
