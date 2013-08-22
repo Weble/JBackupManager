@@ -8,6 +8,7 @@ var _ = require('underscore');
 
 /**
  * Backup and Download the files
+ * 
  * @param  {akeeba} backup The akeebabackup module for the backup
  * @param  {object} site   The site object from the config
  */
@@ -38,6 +39,7 @@ function backupAndDownload(backup, site) {
 		backup.on('step', function(data){
 			if (data) {
 				if (data.data) {
+					// Notify the UI with Socket.IO
 					_.each(global.sockets, function(socket){
 						var info = {
 							percentage: data.data.Progress,
@@ -56,16 +58,19 @@ function backupAndDownload(backup, site) {
 	}
 }
 
+/**
+ * Download an already taken backup
+ * 
+ * @param  {int} 	backup_id The id of the backup to download
+ * @param  {object} site      The site we're downloading the backup from (object)
+ * @param  {string} archive   The archive name of the backup
+ */
 function download(backup_id, site, archive) {
 	// Archive extension
 	var ext = path.extname(archive);
 	
 	// File name to respect the quota
 	filename = site.name + '-' + (site.backup_count  % site.keep) + ext;
-
-	_.each(global.sockets, function(socket){
-		socket.emit('backup-completed', true);
-	});
 
 	var config = storage.getItem('config');
 	var sites = storage.getItem('sites');
@@ -100,6 +105,7 @@ function download(backup_id, site, archive) {
 
 					var total_size = data.total_size;
 
+					// Notify the UI with Socket.IO
 					download.on('step', function(data){
 						fs.stat(file, function(err, stat){
 							var size = stat.size;
@@ -123,6 +129,7 @@ function download(backup_id, site, archive) {
 						sites[site.k] = site;
 						storage.setItem('sites', sites);
 
+						// Notify the UI with Socket.IO
 						_.each(global.sockets, function(socket){
 							var info = {
 								key: site.k
@@ -139,7 +146,6 @@ function download(backup_id, site, archive) {
 		}
 	}
 }
-
 
 exports.backupAndDownload = backupAndDownload;
 exports.download = download;

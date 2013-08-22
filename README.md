@@ -18,6 +18,8 @@ You can also clone this repository into a directory and start working
 - Download any backup file locally, even from Amazon S3
 - Know when the next backup will be triggered
 - Keep old backups, based on a quota limit
+- Download already taken backups locally
+- Test a backup locally using Akeeba Kickstart
 
 ## Ideal Use
 
@@ -27,5 +29,5 @@ add it to the list using the nice UI of the Backup Manager, and have the server 
 storing older versions, just to be safe.
 
 We also **integrate AkeebaBackup with Amazon S3**, so for each website we have a on-site copy, an S3 copy and a series of local copies.
-This also makes both **testing and recovering of websites much easier**, since we don't ahve to download backups anymore, since we already
+This also makes both **testing and recovering of websites much easier**, since we don't have to download backups anymore, since we already
 have every backup stored locally, without having to lose the advantage and the speed of the S3 cloud storage.

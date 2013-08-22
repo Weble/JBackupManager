@@ -6,7 +6,8 @@ var storage = require('node-persist');
 var _ = require('underscore');
 
 /**
- * Download a backup file from Amazone S3
+ * Download a backup file from Amazon S3
+ * 
  * @param  {object}   site     The site object from the config
  * @param  {string}   archive  The archive name from akeeba
  * @param  {Function} callback The function to call when the download ends
@@ -59,6 +60,9 @@ function downloadBackup(site, archive, callback) {
 	});
 }
 
+/**
+ * Utility method (I know, it sucks, but it's quick and dirty ;))
+ */
 function downloadPart(k, data, done, total_size, total_done, s3client, site) {
 	var config = storage.getItem('config');
 	var remote = data.Contents[k].Key;
@@ -68,6 +72,8 @@ function downloadPart(k, data, done, total_size, total_done, s3client, site) {
 
 	// Create the directory if it doesn't exist
 	var downloader = s3client.download(remote, download_folder + file);
+
+	// Notify the UI with Socket.IO
 	downloader.on('progress', function(amountDone, amountTotal) {
 		var info = {
 			key: site.k,
@@ -81,9 +87,13 @@ function downloadPart(k, data, done, total_size, total_done, s3client, site) {
 		});
 	});
 	
+	// Keep track of the total number of parts downloaded
 	downloader.on('end', function() {
 		done = done + 1;
+
+		// Finished the download
 		if (done >= total_parts) {
+			// Notify the UI with Socket.IO
 			_.each(global.sockets, function(socket){
 				var info = {
 					key: site.k
@@ -91,7 +101,10 @@ function downloadPart(k, data, done, total_size, total_done, s3client, site) {
 				socket.emit('download-completed', info);
 			});
 		} else {
+			
 			total_done = total_done + data.Contents[k].Size;
+
+			// Notify the UI with Socket.IO
 			var info = {
 				key: site.k,
 				received: total_done,
@@ -103,6 +116,7 @@ function downloadPart(k, data, done, total_size, total_done, s3client, site) {
 				socket.emit('download-step', info);
 			});
 
+			// Go on with the next part
 			k = k + 1;
 			if (k < data.Contents.length) {
 				downloadPart(k, data, done, total_size, total_done, s3client, site);

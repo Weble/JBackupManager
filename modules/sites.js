@@ -8,10 +8,12 @@ var crons = require('./cronjobs.js');
 var backup = require('./backup.js');
 var path = require('path');
 
+// Init the storage files
 storage.initSync();
 
 /**
  * List the websites
+ * 
  * @param  {object}   req  The request
  * @param  {object}   res  The response object
  * @param  {Function} next The next call
@@ -33,6 +35,7 @@ exports.list = function(req, res, next){
 
 /**
  * Trigger a manual Backup
+ * 
  * @param  {object}   req  The request
  * @param  {object}   res  The response object
  * @param  {Function} next The next call
@@ -56,7 +59,8 @@ exports.backup = function(req, res, next){
 };
 
 /**
- * Download a Website Backup
+ * Download a Website Backup locally
+ * 
  * @param  {object}   req  The request
  * @param  {object}   res  The response object
  * @param  {Function} next The next call
@@ -69,10 +73,12 @@ exports.download = function(req, res, next){
 
 	site.k = k;
 	
+	// List the backups available
 	var bkp = new akeeba(site.url, site.key);
 	bkp.listBackups(function(list){
 		downloaded = false;
 		_.each(list, function(data){
+			// Download the first full backup available (the last one)
 			if (!downloaded && data.status == 'complete' && data.tag != 'restorepoint') {
 				downloaded = true;
 				var archive = data.archivename;
@@ -81,7 +87,7 @@ exports.download = function(req, res, next){
 		});
 	});
 
-	// Redirect
+	// Redirect (ajax call)
 	res.writeHead(302, {
       'Location': '/'
     });
@@ -90,6 +96,7 @@ exports.download = function(req, res, next){
 
 /**
  * Edit a Website
+ * 
  * @param  {object}   req  The request
  * @param  {object}   res  The response object
  * @param  {Function} next The next call
@@ -99,6 +106,7 @@ exports.edit = function(req, res, next){
 	var sites = storage.getItem('sites');
 	var site = sites[k];
 	
+	// Default Cron Time
 	var cron_data = {
 		minute: '0',
 		hour: '0',
@@ -116,6 +124,7 @@ exports.edit = function(req, res, next){
 		site.profiles = []
 		k = '';
 	} else {
+		// Cron time set
 		cron = new crontime(site.cron);
 		cron = cron.source.split(" ");
 		cron_data = {
@@ -144,6 +153,7 @@ exports.edit = function(req, res, next){
 
 /**
  * Save and redirect
+ * 
  * @param  {object}   req  The request
  * @param  {object}   res  The response object
  * @param  {Function} next The next call
@@ -199,6 +209,8 @@ exports.save = function(req, res, next) {
 			try {
 				var backup = new akeeba(site.url, site.key);
 				var key = k;
+
+				// Get the list of profiles
 				backup.getProfiles(function(data){
 					
 					if (data) {
@@ -222,6 +234,7 @@ exports.save = function(req, res, next) {
 			sites[k] = site;
 			storage.setItem('sites', sites);
 
+			// Start the cronjobs
 			crons.init();
 
 			// Redirect
@@ -239,6 +252,7 @@ exports.save = function(req, res, next) {
 
 /**
  * Delete a website
+ * 
  * @param  {object}   req  The request
  * @param  {object}   res  The response object
  * @param  {Function} next The next call
@@ -263,13 +277,19 @@ exports.remove = function(req, res, next) {
 	}
 };
 
+/**
+ * Clean Up a Website Backup test
+ * 
+ * @param  {object}   req  The request
+ * @param  {object}   res  The response object
+ * @param  {Function} next The next call
+ */
 exports.cleanup =  function(req, res, next) {
 	var folder = req.body.folder;
 	var config = storage.getItem('config');
 	var target = config.webroot + '/' + folder + '/';
 
-	console.log(target);
-
+	// Useful function for rm -R
 	var deleteFolderRecursive = function(path) {
 		  if( fs.existsSync(path) ) {
 		    fs.readdirSync(path).forEach(function(file,index){
@@ -287,6 +307,13 @@ exports.cleanup =  function(req, res, next) {
 	deleteFolderRecursive(target);
 }
 
+/**
+ * Prepare a test instance of a backup
+ * 
+ * @param  {object}   req  The request
+ * @param  {object}   res  The response object
+ * @param  {Function} next The next call
+ */
 exports.test = function(req, res, next) {
 
 	var config = storage.getItem('config');
@@ -318,6 +345,7 @@ exports.test = function(req, res, next) {
 
 /**
  * Save the global config
+ * 
  * @param  {object}   req  The request
  * @param  {object}   res  The response object
  * @param  {Function} next The next call
@@ -333,6 +361,7 @@ exports.saveconfig = function(req, res, next) {
 		config.webroot = data.webroot;
 		config.webrooturl = data.webrooturl;
 		
+		// S3 Configuration
 		if (data["s3-bucket"] && data["s3-key"] && data["s3-secret"]) {
 			config.s3 = {
 				key: data["s3-key"],

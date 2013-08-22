@@ -6,11 +6,11 @@ var extend = require('node.extend');
 var _ = require('underscore');
 var storage = require('node-persist');
 
+// Global list of cron jobs
 var cronjobs = [];
 
 /**
  * Read the config from the dedicated file
- * @param  {object} cronjobs The list of active cronjobs
  */
 function init() {
 
