@@ -105,6 +105,56 @@ var Site = function() {
         }
     };
 
+    // get the list of profiles
+    this.getAllBackups = function(callback) {
+        // Get Backups, if possible
+        try {
+            var $this = this;
+
+            // Remove first
+            var backups = this.getBackups(function(err, backups){
+                var removed = 0;
+                var total = backups.length;
+                backups.forEach(function(backup){
+                    geddy.model.Site.remove(backup.id, function(){
+                        removed++;
+                        if (removed >= total) {
+                            var akeeba = require('akeebabackup');
+                            var backup = new akeeba($this.url, $this.key);
+                            
+                            // Get the list of profiles
+                            backup.listBackups(function(data){    
+                                var backups = [];
+                                if (data) {
+                                    data.forEach(function(bkp){     
+                                        b = geddy.model.Backup.create();
+                                        for (var i in bkp) {
+                                            b[i] = bkp[i];
+                                        }
+
+                                        $this.addBackup(b);
+                                    });
+                                    $this.save();
+
+                                    $this.getLastBackup(function(){
+                                        if (callback) {
+                                            callback();
+                                        }
+                                    });
+                                }
+
+                            });
+                        }
+                    });
+                })
+            });
+
+            
+        } catch(e) {
+            
+        }
+    };
+
     // Do a backup on this site
     this.backup = function() {
         var akeeba = require('akeebabackup');
@@ -116,7 +166,7 @@ var Site = function() {
             // When the backup is completed, download the file if necessary
             backup.on('completed', function(data) {
 
-                $this.getLastBackup();
+                $this.getAllBackups();
                 
                 geddy.sockets.forEach(function(socket) {
                     socket.emit('backup-completed', {
@@ -132,16 +182,7 @@ var Site = function() {
             // Save backup id and file name for the download operation
             backup.on('started', function(data) {
                 if (data) {
-                    if (data.data) {
-                        
-                        var now = new Date();
-                        
-                        b = geddy.model.Backup.create();
-                        b.backupid = data.data.BackupID;
-                        b.archive = data.data.Archive;
-
-                        $this.addBackup(b);
-                        $this.save();
+                    if (data.data) {                        
                     }
                 }
             });
@@ -263,3 +304,6 @@ Site.someStaticProperty = 'YYZ';
 */
 
 exports.Site = Site;
+
+geddy.model.register('Site', Site);
+

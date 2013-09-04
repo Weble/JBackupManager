@@ -2,13 +2,22 @@ var Backup = function () {
 
   this.defineProperties({
     backupid: {type: 'int'},
-    archive: {type: 'string'},
-    time: {type: 'datetime'},
-    status: {type: 'string'}
+    description: {type: 'string'},
+    comment: {type: 'string'},
+    backupstart: {type: 'datetime'},
+    backupend: {type: 'datetime'},
+    status: {type: 'string'},
+    origin: {type: 'string'},
+    type: {type: 'string'},
+    profileid: {type: 'int'},
+    multipart: {type: 'boolean'},
+    tag: {type: 'string'},
+    fileexist: {type: 'boolean'},
+    meta: {type: 'string'},
+    size: {type: 'int'},
+    archive: {type: 'string'}
   });
-
-  this.belongsTo('Site');
-
+  
   /*
   this.property('login', 'string', {required: true});
   this.property('password', 'string', {required: true});

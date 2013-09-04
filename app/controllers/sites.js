@@ -66,7 +66,18 @@ var Sites = function () {
         self.error(err);
       }
       else {
-        self.respond({params: params, site: site.toObj()});
+        site.getBackups(function(err, backups){
+          var bkps = [];
+          backups.forEach(function(backup){
+            var tmp = backup.toObj();
+            bkps.push(tmp);
+          });
+          
+          var data = site.toObj();
+          data.backups = bkps;
+          
+          self.respond({params: params, site: data});
+        });
       }
     });
   };

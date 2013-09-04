@@ -45,5 +45,4 @@ router.resource('sites');
 router.post('/sites/:id/backup').to('Sites.backup');
 router.post('/sites/:id/download').to('Sites.download');
 
-router.resource('backups');
 exports.router = router;

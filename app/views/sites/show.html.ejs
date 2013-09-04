@@ -2,16 +2,30 @@
   <h2 class="name"><%= site.name %></h2>
   <%- linkTo('Edit this site', editSitePath(params.id), {class: 'btn pull-right'}); %>
 </div>
-
+<% console.log(site); %>
 <h2>Site Properties</h2>
+<dl class="dl-horizontal">
 <% for(var i in site) { -%>
 <% if(i !== 'saved') { -%>
-<div class="row list-item">
-  <div class="span4">
-    <h3><%= i %></h3>
-  </div>
-  <div class="span8">
-    <h3><i class="icon-list-alt"></i><span class="<%= i %>"><%= site[i] %></span></h3>
-  </div>
-</div>
+<dt><%= i %></dt>
+<dd><%= site[i]; %></dd>
 <% } -%><% } -%>
+</dl>
+
+<h3>Backups</h3>
+<table class="table table-bordered table-condensed">
+<thead>
+	<tr>
+		<th>Backup ID</th>
+	</tr>
+</thead>
+<tbody>
+	<% for (var i = 0; i < site.backups.length; i++){ var backup = site.backups[i]; %>
+		<tr>
+			<td><%= backup.backupid; %></td>
+		</tr>
+	<%
+	}
+	%>
+</tbody>
+</table>
