@@ -1,0 +1,23 @@
+<div class="well">
+    <form id="site-form" class="form-horizontal" action="/sites/<%= params.id %>?_method=PUT" method="POST">
+        <fieldset>
+            <legend>Update: <%= site.name %></legend>
+            <% if(params.errors) { %>
+                <div class="control-group">
+                    <ul>
+                    <% for(var err in params.errors) { %>
+                        <li><%= params.errors[err]; %></li>
+                    <% } %>
+                    </ul>
+                </div>
+                <% } %>
+
+                <%- partial('form', {site: site}) %>
+
+                <div class="form-actions">
+                    <%- contentTag('input', 'Save', {type: 'submit', class: 'btn btn-primary'}) %>
+                    <%- contentTag('button', 'Remove', {type: 'submit', formaction: '/sites/' + params.id + '?_method=DELETE', formmethod: 'POST', class: 'btn btn-danger'}) %>
+                </div>
+            </fieldset>
+    </form>
+</div>

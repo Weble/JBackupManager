@@ -1,0 +1,146 @@
+<div class="row-fluid">
+    <%- linkTo('Create a new Site', addSitePath, {class: 'btn pull-right'}); %>
+    <h1>All Sites</h1>
+</div>
+
+<% if (sites) { %>
+<table class="table table-bordered table-striped">
+    <thead>
+        <th>Name</th>
+        <th>Url</th>
+        <th>Download Type</th>
+        <th>Download Folder</th>
+        <th>Status</th>
+        <th>Last Backup</th>
+        <th>Next Backup</th>
+        <th>Actions</th>
+    </thead>
+    <tbody>
+        <% for (var i = 0, ii = sites.length; i < ii; i++) { %>
+        <tr id="site-<%= sites[i].id; %>">
+            <td>
+                <%- linkTo(sites[i].name, sitePath(sites[i].id)); %>
+            </td>
+            <td>
+                <%= sites[i].url %>
+            </td>
+            <td>
+                <%= sites[i].downloadtype %>
+            </td>
+            <td>
+                <%= sites[i].downloadfolder %>
+            </td>
+            <td class="status">       
+                <span>Idle</span>
+                <div class="progress progress-striped active" style="display:none;">
+                    <div class="bar" style="width: 0%;"></div>
+                </div>
+            </td>
+            <td class="last-backup">
+               <%= geddy.date.strftime(sites[i].lastbackup, '%d/%m/%y %H:%M:%S'); %>
+            </td>
+            <td>
+                <%= sites[i].nextbackup %>
+            </td>
+            <td class="span2">
+                <div class="btn-group">
+                    <a href="/sites/<%= sites[i].id; %>/edit" class="btn btn-warning" data-toggle="tooltip" title="Edit" data-container="body"><i class="icon-white icon-edit"></i></a>
+                    <a href="#" class="download btn btn-info" data-url="/sites/<%= sites[i].id; %>/download" data-toggle="tooltip" title="Download" data-container="body"><i class="icon-white icon-download-alt"></i></a>
+                    <a href="#" class="backup btn btn-primary" data-url="/sites/<%= sites[i].id; %>/backup" data-toggle="tooltip" title="Backup" data-container="body"><i class="icon-white icon-play"></i></a>
+                    <a href="#test" class="test btn btn-success" data-key="<%= sites[i].id; %>" data-toggle="tooltip" title="Test" data-container="body" data-toggle="modal"><i class="icon-white icon-refresh"></i></a>
+                </div>
+            </td>
+        </tr>
+        <% } %>
+    </tbody>
+</table>
+<% } %>
+
+<script type="text/javascript">
+$(document).ready(function(){
+
+    $('[data-toggle="tooltip"]').tooltip({container: 'body'});
+
+    $('.download').click(function(){
+        var tr = $(this).parents('tr');
+        var status = $('.status', tr);
+        $('span', status).html('Downloading');
+        $('.progress', status).show();
+        var url = $(this).data('url');
+        $.post(url);
+    });
+
+    $('.backup').click(function(){
+        var tr = $(this).parents('tr');
+        var status = $('.status', tr);
+        $('span', status).html('Backup...');
+        $('.progress', status).show();
+        var url = $(this).data('url');
+        $.post(url);
+    });
+
+    $('.test').click(function(){
+        $('#testid').val($(this).data('key'));
+        $('#test').modal();
+        $('#test .submit').click(function(){
+            $(this).hide();
+            $('#test .cleanup').show();
+        });
+    });
+
+    $('#test .cleanup').click(function(){
+        $.post('/cleanup', {folder: $('#testfolder').val()});
+        $(this).hide();
+        $('#test .submit').show();
+        $('#test').modal('hide');
+    });
+
+    var socket = io.connect('http://' + window.location.host);
+    socket.on('download-step', function (data) {
+        var received = (data.received / 1048576 ).toFixed(2);
+        var total = (data.total / 1048576 ).toFixed(2);
+
+        var tr = $('#site-' + data.key);
+        var status = $('.status', tr);
+
+        $('.progress', status).show();
+        $('span', status).html('Downloading ('+received +'MB of '+total +'MB)');
+        $('.progress .bar', status).css('width', data.percentage + '%');
+    });
+
+    socket.on('download-completed', function (data) {
+        var tr = $('#site-' + data.key);
+        var status = $('.status', tr);
+
+        $('span', status).html('Idle');
+        $('.progress .bar', status).css('width', '0%');
+        $('.progress', status).hide();
+
+        var date = (new Date(data.last_backup)).toString('dd/MM/yyyy HH:mm');
+        $('.last-backup', status).html(date);
+    });
+
+    socket.on('backup-step', function (data) {
+        var tr = $('#site-' + data.key);
+        var status = $('.status', tr);
+
+        $('.progress', status).show();
+        $('span', status).html('Backup...');
+        $('.progress .bar', status).css('width', data.percentage + '%');
+    });
+
+    socket.on('backup-completed', function (data) {
+        var tr = $('#site-' + data.key);
+        var status = $('.status', tr);
+
+        $('span', status).html('Idle');
+        $('.progress', status).hide();
+        $('.progress .bar', status).css('width', '0%');
+
+         var date = (new Date(data.last_backup)).toString('dd/MM/yyyy HH:mm');
+        $('.last-backup', tr).html(date);
+    });
+});
+
+
+</script>

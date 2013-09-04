@@ -1,0 +1,17 @@
+<div class="hero-unit">
+  <h2 class="name"><%= site.name %></h2>
+  <%- linkTo('Edit this site', editSitePath(params.id), {class: 'btn pull-right'}); %>
+</div>
+
+<h2>Site Properties</h2>
+<% for(var i in site) { -%>
+<% if(i !== 'saved') { -%>
+<div class="row list-item">
+  <div class="span4">
+    <h3><%= i %></h3>
+  </div>
+  <div class="span8">
+    <h3><i class="icon-list-alt"></i><span class="<%= i %>"><%= site[i] %></span></h3>
+  </div>
+</div>
+<% } -%><% } -%>

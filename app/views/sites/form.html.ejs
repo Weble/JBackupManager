@@ -1,0 +1,109 @@
+<div class="control-group">
+  <label for="name" class="control-label">Name</label>
+  <div class="controls">
+    <%- contentTag('input', site.name, {type:'text', class:'span6', name:'name'}) %>
+  </div>
+</div>
+<div class="control-group">
+  <label for="url" class="control-label">Url</label>
+  <div class="controls">
+    <%- contentTag('input', site.url, {type:'text', class:'span6', name:'url'}) %>
+  </div>
+</div>
+<div class="control-group">
+  <label for="key" class="control-label">Akeeba Secrety Key</label>
+  <div class="controls">
+    <%- contentTag('input', site.key, {type:'password', class:'span6', name:'key'}) %>
+  </div>
+</div>
+<div class="control-group">
+  <label for="profile" class="control-label">Profile</label>
+  <div class="controls">
+    <%
+      var empty = geddy.object.isEmpty(site.profiles);
+      if(!empty) { 
+        var profiles = geddy.object.toArray(site.profiles);
+      %>
+      <select name="profile" id="profile">
+      <% profiles.forEach(function(profile, k) { var k = profile.key; var profile = profile.value; %>
+        <option value="<%= k %>" <%= site.profile == k ? 'selected=selected' : '' %>"><%= profile %></option>
+      <% }); %>
+      </select>
+      <% } else { %>
+       <%- contentTag('input', site.profile, {type:'text', class:'span6', name:'profile'}) %>
+      <% } %>
+  </div>
+</div>
+<div class="control-group">
+  <label for="downloadtype" class="control-label">Download Type</label>
+  <div class="controls">
+    <select name="downloadtype" id="downloadtype">
+    <option value="s3" <% if (site.downloadtype == 's3'){ %> selected="selected" <% } %>>Amazon S3</option>
+      <option value="direct" <% if (site.downloadtype == 'direct'){ %> selected="selected" <% } %>>Direct Download</option>
+      <option value="false" <% if (site.downloadtype == 'false'){ %> selected="selected" <% } %>>Do not Download</option>
+    </select>
+  </div>
+</div>
+<div class="folder collapse <% if (site.downloadtype != 'false'){ %>in<% } else {%>out<% } %>">
+  <div class="control-group">
+    <label for="downloadfolder" class="control-label">Download Folder</label>
+    <div class="controls">
+      <%- contentTag('input', site.downloadfolder, {type:'text', class:'span6', name:'downloadfolder'}) %>
+    </div>
+  </div>
+</div>
+<div class="s3 collapse <% if (site.downloadtype == 's3'){ %>in<% } else {%>out<% } %>">
+  <div class="control-group">
+    <label for="s3folder" class="control-label">S3 Folder</label>
+    <div class="controls">
+      <%- contentTag('input', site.s3folder, {type:'text', class:'span6', name:'s3folder'}) %>
+    </div>
+  </div>
+  <div class="control-group">
+    <label for="s3bucket" class="control-label">S3 Bucket</label>
+    <div class="controls">
+       <%- contentTag('input', site.s3bucket, {type:'text', class:'span6', name:'s3bucket'}) %>
+    </div>
+</div>
+</div>
+<div class="control-group">
+  <label for="quota" class="control-label">Quota</label>
+  <div class="controls">
+    <%- contentTag('input', site.quota, {type:'number', class:'span2', name:'quota'}) %>
+  </div>
+</div>
+<div class="control-group">
+  <label for="cron" class="control-label">cron</label>
+  <div class="controls">
+    object
+  </div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function(){
+  $("#downloadtype").change(function(){
+    if ($(':selected', $(this)).val() == 's3') {
+      $('.s3').collapse('show');
+    } else {
+      if ($('.s3').hasClass('in')){
+        $('.s3').collapse('hide');
+      }
+    }
+
+    if ($(':selected', $(this)).val() == 'false') {
+      $('.folder').collapse('hide');
+    } else {
+      $('.folder').collapse('show');
+    }
+  });
+
+  $("#downloadtype").change(function(){
+    var val = $(':selected', $(this)).val();
+    if (val == 's3' || val == 'direct') {
+      $('.download').collapse('show');
+    } else {
+      $('.download').collapse('hide');
+    }
+  });
+});
+</script>

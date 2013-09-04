@@ -1,0 +1,63 @@
+<% 
+var config = geddy.settings
+%>
+
+<!-- Lets talk about geddy -->
+<div class="well">
+  <h1>Configuration</h1>
+  <form class="form-horizontal" action="/saveconfiguration" method="POST">
+    <fieldset>
+      <legend>Update this Backup</legend>
+      <% if(params.errors) { %>
+      <div class="control-group">
+        <ul>
+        <% for(var err in params.errors) { %>
+          <li><%= params.errors[err]; %></li>
+        <% } %>
+        </ul>
+      </div>
+      <% } %>
+
+	<div class="control-group">
+	    <label class="control-label" for="name">Download Folder</label>
+	    <div class="controls">
+	      	 <%- contentTag('input', config.folder, {type:'text', class:'span6', name:'folder'}) %>
+	    </div>
+	</div>
+	<div class="control-group">
+	    <label class="control-label" for="webroot">Web Root for Tests</label>
+	    <div class="controls">
+	      	 <%- contentTag('input', config.webroot, {type:'text', class:'span6', name:'webroot'}) %>
+	    </div>
+	</div>
+	<div class="control-group">
+	    <label class="control-label" for="webrooturl">Web Root Url</label>
+	    <div class="controls">
+	      	<%- contentTag('input', config.webrooturl, {type:'text', class:'span6', name:'webrooturl'}) %>
+	    </div>
+	</div>
+	<div class="control-group">
+	    <label class="control-label" for="name">Amazon S3 Key</label>
+	    <div class="controls">
+	      <%- contentTag('input', config.s3key, {type:'text', class:'span6', name:'s3key'}) %>
+	    </div>
+	</div>
+	<div class="control-group">
+	    <label class="control-label" for="name">Amazon S3 Secret</label>
+	    <div class="controls">
+	      	<%- contentTag('input', config.s3secret, {type:'text', class:'span6', name:'s3secret'}) %>
+	    </div>
+	</div>
+	<div class="control-group">
+	    <label class="control-label" for="name">Amazon S3 Bucket</label>
+	    <div class="controls">
+	      	<%- contentTag('input', config.s3bucket, {type:'text', class:'span6', name:'s3bucket'}) %>
+	    </div>
+	</div>
+
+      <div class="form-actions">
+        <%- contentTag('input', 'Save', {type: 'submit', class: 'btn btn-primary'}) %>
+      </div>
+    </fieldset>
+  </form>
+</div>
