@@ -15,6 +15,8 @@ var init = function(cb) {
 
   geddy.sockets = [];
 
+  geddy.cronjobs = [];
+
   geddy.settings = require('./config')();
 
   cb();

@@ -107,52 +107,69 @@ var Site = function() {
 
     // get the list of profiles
     this.getAllBackups = function(callback) {
+        
         // Get Backups, if possible
         try {
             var $this = this;
 
-            // Remove first
-            var backups = this.getBackups(function(err, backups){
-                var removed = 0;
-                var total = backups.length;
+            // Already preset => do not update
+            this.fetchBackups(function(backups){
                 backups.forEach(function(backup){
-                    geddy.model.Site.remove(backup.id, function(){
-                        removed++;
-                        if (removed >= total) {
-                            var akeeba = require('akeebabackup');
-                            var backup = new akeeba($this.url, $this.key);
-                            
-                            // Get the list of profiles
-                            backup.listBackups(function(data){    
-                                var backups = [];
-                                if (data) {
-                                    data.forEach(function(bkp){     
-                                        b = geddy.model.Backup.create();
-                                        for (var i in bkp) {
-                                            b[i] = bkp[i];
-                                        }
-
-                                        $this.addBackup(b);
-                                    });
-                                    $this.save();
-
-                                    $this.getLastBackup(function(){
-                                        if (callback) {
-                                            callback();
-                                        }
-                                    });
-                                }
-
-                            });
+                    geddy.model.Backup.all({siteId: $this.id, backupid: backup.backupid}, function(err, bkps){
+                        if (err || bkps.length <= 0) {
+                            $this.addBackup(backup);
+                            $this.save();
                         }
                     });
-                })
+                });
             });
 
             
         } catch(e) {
             
         }
+    };
+
+    this.fetchBackups = function(callback) {
+        
+        var $this = this;
+        var akeeba = require('akeebabackup');
+        var akb = new akeeba($this.url, $this.key);
+        
+        var backups = [];
+        // Get the list of profiles
+        akb.listBackups(function(data){    
+            var backups = [];
+            if (data) {
+                data.forEach(function(bkp){    
+                    b = geddy.model.Backup.create();
+                    b.type = 'Backup';
+
+                    var t = bkp.backupstart.split(/[- :]/);
+                    b.backupstart = new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5]);
+
+                    var t = bkp.backupend.split(/[- :]/);
+                    b.backupend = new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5]);
+
+                    b.backupid = bkp.id;
+                    b.archive = bkp.archivename;
+                    b.description = bkp.description;
+                    b.comment = bkp.comment;
+                    b.status = bkp.status;
+
+                   backups.push(b);
+                });
+
+                /*$this.getLastBackup(function(){
+                    if (callback) {
+                        callback();
+                    }
+                });*/
+
+                callback(backups);
+            }
+
+        });
     };
 
     // Do a backup on this site
@@ -182,7 +199,12 @@ var Site = function() {
             // Save backup id and file name for the download operation
             backup.on('started', function(data) {
                 if (data) {
-                    if (data.data) {                        
+                    if (data.data) {
+                        b = geddy.model.Backup.create();
+                        b.type = 'Backup';                        
+
+                        b.backupid = data.data.BackupID;
+                        b.archive = data.data.Archive;
                     }
                 }
             });
@@ -302,6 +324,37 @@ Site.someStaticMethod = function () {
 };
 Site.someStaticProperty = 'YYZ';
 */
+
+Site.restartCronjobs = function() {
+
+    var cronjob = require('cron').CronJob;
+
+    geddy.cronjobs.forEach(function(job){
+        job.stop();
+    });
+
+    geddy.cronjobs = [];
+
+    geddy.model.Site.all(function(err, sites){
+        sites.forEach(function(site){
+            var cron =  "00 " + site.cron.min + " " + site.cron.h + " " + site.cron.d + " " + site.cron.m + " " + site.cron.wd;
+
+            var c = new cronjob(
+                    cron, 
+                    function(){
+                        this.backup();                    },
+                    function(){
+                        
+                    }, 
+                    true, // Start now
+                    null,
+                    site // Context
+                );
+
+            geddy.cronjobs.push(c);
+        });
+    });
+};
 
 exports.Site = Site;
 

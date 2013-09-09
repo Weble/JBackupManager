@@ -15,9 +15,98 @@ var Backup = function () {
     fileexist: {type: 'boolean'},
     meta: {type: 'string'},
     size: {type: 'int'},
-    archive: {type: 'string'}
+    archive: {type: 'string'},
+    downloaded: {type: 'boolean'},
+    downloadedfile: {type: 'string'}
   });
-  
+
+  this.belongsTo('Site');
+
+  // Download the backup for this site
+    this.download = function() {
+        
+        var path = require('path');
+        var fs = require('node-fs');
+        var akeeba = require('akeebabackup');
+        var b = this;
+
+        // Archive extension
+        var ext = path.extname(b.archive);
+        var $this = this;
+
+        // File name to respect the quota
+        var filename = b.archive;
+
+        // S3 download?
+        this.getSite(function(err, site){
+
+          if (site.downloadtype == 's3') {
+              // Download from S3
+              $this.downloadFromS3(b.archive, function(){
+                
+                 
+              });
+
+          } else {
+              // Direct download from the site?
+              if (site.downloadtype == 'direct') {
+
+                  // File names
+                  var file = geddy.settings.folder + site.downloadfolder + '/' + filename;
+                  var folder = path.normalize(path.dirname(file));
+
+                  // Create directory if necessary
+                  fs.mkdir(folder, 0755, true, function(){
+                      // Create new akeeba object to avoid events interference
+                      var download = new akeeba(site.url, site.key);
+                      download.getBackupInfo(b.backupid, function(data){
+
+                          var total_size = data.total_size;
+
+                          // Notify the UI with Socket.IO
+                          download.on('step', function(data){
+                              fs.stat(file, function(err, stat){
+                                  var size = stat.size;
+                                  var info = {
+                                      key: site.id,
+                                      backupid: $this.id,
+                                      received: size,
+                                      total: total_size,
+                                      percentage: ((size * 100) / total_size)
+                                  };
+                                  geddy.sockets.forEach(function(socket){
+                                      socket.emit('download-step', info);
+                                  });
+                              });
+                          });
+
+                          // When completed, update count of backups to respect quota
+                          download.on('completed', function(){
+
+                              $this.downloadedfile = file;
+                              $this.downloaded = true;
+                              $this.save();  
+
+                              // Notify the UI with Socket.IO
+                              geddy.sockets.forEach(function(socket){
+                                  var info = {
+                                      key: site.id,
+                                      backupid: $this.id
+                                  };
+                                  socket.emit('download-completed', info);
+                              });
+                          });
+
+
+                          // launch download!
+                          download.download(b.backupid, file);
+                      });
+                  });
+              }
+          }
+        });
+    };
+
   /*
   this.property('login', 'string', {required: true});
   this.property('password', 'string', {required: true});

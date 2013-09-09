@@ -3,10 +3,4 @@
   	geddy.sockets.push(socket);
   });
 
-
-	Site.on('save', function(){
-  	console.log(this);
-  	if (this.url && this.key) {
-  		this.getAllBackups();
-  	}
-  });
+geddy.model.Site.restartCronjobs();

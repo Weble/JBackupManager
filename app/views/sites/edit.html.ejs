@@ -1,7 +1,6 @@
 <div class="well">
     <form id="site-form" class="form-horizontal" action="/sites/<%= params.id %>?_method=PUT" method="POST">
-        <fieldset>
-            <legend>Update: <%= site.name %></legend>
+       
             <% if(params.errors) { %>
                 <div class="control-group">
                     <ul>
@@ -14,10 +13,41 @@
 
                 <%- partial('form', {site: site}) %>
 
-                <div class="form-actions">
-                    <%- contentTag('input', 'Save', {type: 'submit', class: 'btn btn-primary'}) %>
-                    <%- contentTag('button', 'Remove', {type: 'submit', formaction: '/sites/' + params.id + '?_method=DELETE', formmethod: 'POST', class: 'btn btn-danger'}) %>
-                </div>
+                
             </fieldset>
+
+            <div class="form-actions">
+                <%- contentTag('input', 'Save', {type: 'submit', class: 'btn btn-primary'}) %>
+                <%- contentTag('button', 'Remove', {type: 'submit', formaction: '/sites/' + params.id + '?_method=DELETE', formmethod: 'POST', class: 'btn btn-danger'}) %>
+            </div>
     </form>
 </div>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    $("#downloadtype").change(function(){
+      if ($(':selected', $(this)).val() == 's3') {
+        $('.s3').collapse('show');
+      } else {
+        if ($('.s3').hasClass('in')){
+          $('.s3').collapse('hide');
+        }
+      }
+
+      if ($(':selected', $(this)).val() == 'false') {
+        $('.folder').collapse('hide');
+      } else {
+        $('.folder').collapse('show');
+      }
+    });
+
+    $("#downloadtype").change(function(){
+      var val = $(':selected', $(this)).val();
+      if (val == 's3' || val == 'direct') {
+        $('.download').collapse('show');
+      } else {
+        $('.download').collapse('hide');
+      }
+    });
+  });
+  </script>

@@ -1,31 +1,128 @@
-<div class="hero-unit">
+<div class="well">
+<%- linkTo('Edit this site', editSitePath(params.id), {class: 'btn pull-right'}); %>
   <h2 class="name"><%= site.name %></h2>
-  <%- linkTo('Edit this site', editSitePath(params.id), {class: 'btn pull-right'}); %>
 </div>
-<% console.log(site); %>
-<h2>Site Properties</h2>
-<dl class="dl-horizontal">
-<% for(var i in site) { -%>
-<% if(i !== 'saved') { -%>
-<dt><%= i %></dt>
-<dd><%= site[i]; %></dd>
-<% } -%><% } -%>
-</dl>
 
-<h3>Backups</h3>
-<table class="table table-bordered table-condensed">
-<thead>
-	<tr>
-		<th>Backup ID</th>
-	</tr>
-</thead>
-<tbody>
-	<% for (var i = 0; i < site.backups.length; i++){ var backup = site.backups[i]; %>
+<div class="well">
+	<h3>Site Properties</h3>
+	<dl class="dl-horizontal">
+		<% for(var i in site) { -%>
+		<% if(i !== 'saved') { -%>
+			<dt><%= i %></dt>
+			<dd><%= site[i]; %></dd>
+		<% } -%><% } -%>
+	</dl>
+</div>
+
+<div class="well">
+	<h3>Backups</h3>
+	<table class="table table-bordered table-condensed">
+	<thead>
 		<tr>
-			<td><%= backup.backupid; %></td>
+			<th>ID</th>
+			<th>Description</th>
+			<th>Comment</th>
+			<th>Duration</th>
+			<th>Start</th>
+			<th>End</th>
+			<th>Status</th>
+			<th>Downloaded</th>
+			<th>Actions</th>
 		</tr>
-	<%
-	}
-	%>
-</tbody>
-</table>
+	</thead>
+	<tbody>
+		<% for (var i = 0; i < site.backups.length; i++){ var backup = site.backups[i]; %>
+			<tr <% if(backup.status == 'fail') { %>class="error"<% } %> id="backup-<%= backup.id %>">
+				<td><%= backup.backupid; %></td>
+				<td><%= backup.description; %></td>
+				<td><%= backup.comment; %></td>
+				<td>
+					<% if (backup.backupend > 0) { %>
+					<%= geddy.date.diff(backup.backupstart, backup.backupend, 'minute'); %>m <%= geddy.date.diff(backup.backupstart, backup.backupend, 'second'); %>s
+					<% } %>
+				</td>
+				<td><%= geddy.date.strftime(backup.backupstart, '%d/%m/%y %H:%M:%S') %></td>
+				<td><%= backup.backupend > 0 ? geddy.date.strftime(backup.backupend, '%d/%m/%y %H:%M:%S') : '' %></td>
+				<td>
+					<% 
+					switch (backup.status) { 
+						case 'complete':
+						%>
+							<span class="label label-success"><i class="icon-ok icon-white"></i></span>
+						<%
+						break;
+						case 'fail':
+						%>
+							<span class="label label-important"><i class="icon-remove icon-white"></i></span>
+						<%
+						break;
+						default:
+						%>
+							<span class="label label-warning"><i class="icon-question-sign icon-white"></i></span>
+						<%
+						break;
+					}	
+					%>
+				</td>
+				<td class="status">
+					<span class="label label-<%= (backup.downloaded ? 'success' : 'important'); %>">
+					<% if (backup.downloaded) { %>
+						Downloaded
+					<% } else { %>
+						Not Downloaded
+					<% } %>
+					</span>
+					<div class="progress progress-striped active" style="display:none;">
+					    <div class="bar" style="width: 0%;"></div>
+					</div>
+				</td>
+				<td>
+					<div class="btn-group">
+					    <button class="download btn btn-info" data-url="/backups/<%= backup.id; %>/download" data-toggle="tooltip" title="Download" data-container="body"><i class="icon-white icon-download-alt"></i></button>
+					    <% if (backup.status == 'complete' && backup.downloaded == true) { %>
+					    <a href="/backups/<%= backup.id; %>/test" class="test btn btn-success"><i class="icon-white icon-refresh"></i></a>
+					    <% } %>
+					</div>
+				</td>
+			</tr>
+		<%
+		}
+		%>
+	</tbody>
+	</table>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function(){
+
+    $('[data-toggle="tooltip"]').tooltip({container: 'body'});
+
+    $('.download').click(function(e){
+    	e.preventDefault();
+        var url = $(this).data('url');
+        $.post(url);
+    });
+
+    var socket = io.connect('http://' + window.location.host);
+    socket.on('download-step', function (data) {
+        var received = (data.received / 1048576 ).toFixed(2);
+        var total = (data.total / 1048576 ).toFixed(2);
+
+        var tr = $('#backup-' + data.backupid);
+        var status = $('.status', tr);
+
+        $('.progress', status).show();
+        $('span', status).html('Downloading ('+received +'MB of '+total +'MB)');
+        $('.progress .bar', status).css('width', data.percentage + '%');
+    });
+
+    socket.on('download-completed', function (data) {
+        var tr = $('#backup-' + data.backupid);
+        var status = $('.status', tr);
+
+        $('span', status).html('Downloaded');
+        $('.progress .bar', status).css('width', '0%');
+        $('.progress', status).hide();
+    });
+});
+</script>

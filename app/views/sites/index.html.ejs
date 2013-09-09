@@ -40,7 +40,7 @@
                <%= geddy.date.strftime(sites[i].lastbackup, '%d/%m/%y %H:%M:%S'); %>
             </td>
             <td>
-                <%= sites[i].nextbackup %>
+               <%= geddy.date.strftime(sites[i].nextbackup, '%d/%m/%y %H:%M:%S'); %>
             </td>
             <td class="span2">
                 <div class="btn-group">
@@ -61,7 +61,8 @@ $(document).ready(function(){
 
     $('[data-toggle="tooltip"]').tooltip({container: 'body'});
 
-    $('.download').click(function(){
+    $('.download').click(function(e){
+        e.preventDefault();
         var tr = $(this).parents('tr');
         var status = $('.status', tr);
         $('span', status).html('Downloading');
@@ -70,7 +71,8 @@ $(document).ready(function(){
         $.post(url);
     });
 
-    $('.backup').click(function(){
+    $('.backup').click(function(e){
+        e.preventDefault();
         var tr = $(this).parents('tr');
         var status = $('.status', tr);
         $('span', status).html('Backup...');
@@ -79,7 +81,8 @@ $(document).ready(function(){
         $.post(url);
     });
 
-    $('.test').click(function(){
+    $('.test').click(function(e){
+        e.preventDefault();
         $('#testid').val($(this).data('key'));
         $('#test').modal();
         $('#test .submit').click(function(){
@@ -88,7 +91,8 @@ $(document).ready(function(){
         });
     });
 
-    $('#test .cleanup').click(function(){
+    $('#test .cleanup').click(function(e){
+        e.preventDefault();
         $.post('/cleanup', {folder: $('#testfolder').val()});
         $(this).hide();
         $('#test .submit').show();
