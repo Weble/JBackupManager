@@ -86,7 +86,7 @@ var Sites = function() {
                 err.statusCode = 404;
                 self.error(err);
             } else {
-                site.getBackups(function(err, backups) {
+                site.getBackups(null, {sort: {backupid: 'desc'}}, function(err, backups) {
                     var bkps = [];
                     backups.forEach(function(backup) {
                         // Don't know why this is necessary

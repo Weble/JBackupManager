@@ -78,10 +78,11 @@
 				</td>
 				<td>
 					<div class="btn-group">
+						<% if (backup.status == 'complete') { %>
 					    <button class="download btn btn-info" data-url="/backups/<%= backup.id; %>/download" data-toggle="tooltip" title="Download" data-container="body"><i class="icon-white icon-download-alt"></i></button>
-					    <% if (backup.status == 'complete' && backup.downloaded == true) { %>
+					    <% if (backup.downloaded == true) { %>
 					    <a href="/backups/<%= backup.id; %>/test" class="test btn btn-success"><i class="icon-white icon-refresh"></i></a>
-					    <% } %>
+					    <% } } %>
 					</div>
 				</td>
 			</tr>
