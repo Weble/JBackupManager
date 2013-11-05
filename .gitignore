@@ -20,3 +20,5 @@ node_modules
 persist
 backups
 backups/*
+config/secrets.json
+config/configuration.json
