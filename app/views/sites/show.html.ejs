@@ -33,17 +33,17 @@
 	<tbody>
 		<% for (var i = 0; i < site.backups.length; i++){ var backup = site.backups[i]; %>
 			<tr <% if(backup.status == 'fail') { %>class="error"<% } %> id="backup-<%= backup.id %>">
-				<td><%= backup.backupid; %></td>
-				<td><%= backup.description; %></td>
-				<td><%= backup.comment; %></td>
-				<td>
+				<td class="span1"><%= backup.backupid; %></td>
+				<td class="span2"><%= backup.description; %></td>
+				<td class="span3"><%= backup.comment; %></td>
+				<td class="span2">
 					<% if (backup.backupend > 0) { %>
 					<%= geddy.date.diff(backup.backupstart, backup.backupend, 'minute'); %>m <%= geddy.date.diff(backup.backupstart, backup.backupend, 'second'); %>s
 					<% } %>
 				</td>
-				<td><%= geddy.date.strftime(backup.backupstart, '%d/%m/%y %H:%M:%S') %></td>
-				<td><%= backup.backupend > 0 ? geddy.date.strftime(backup.backupend, '%d/%m/%y %H:%M:%S') : '' %></td>
-				<td>
+				<td class="span1"><%= geddy.date.strftime(backup.backupstart, '%d/%m/%y %H:%M:%S') %></td>
+				<td class="span1"><%= backup.backupend > 0 ? geddy.date.strftime(backup.backupend, '%d/%m/%y %H:%M:%S') : '' %></td>
+				<td class="span1">
 					<% 
 					switch (backup.status) { 
 						case 'complete':
@@ -64,7 +64,7 @@
 					}	
 					%>
 				</td>
-				<td class="status">
+				<td class="status span1">
 					<span class="label label-<%= (backup.downloaded ? 'success' : 'important'); %>">
 					<% if (backup.downloaded) { %>
 						Downloaded
@@ -75,8 +75,8 @@
 					<div class="progress progress-striped active" style="display:none;">
 					    <div class="bar" style="width: 0%;"></div>
 					</div>
-				</td>
-				<td>
+				</td class="span1">
+				<td class="span1">
 					<div class="btn-group">
 						<% if (backup.status == 'complete') { %>
 					    <button class="download btn btn-info" data-url="/backups/<%= backup.id; %>/download" data-toggle="tooltip" title="Download" data-container="body"><i class="icon-white icon-download-alt"></i></button>

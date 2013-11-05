@@ -1,7 +1,8 @@
 {
   "name": "JBackupManager",
   "version": "0.0.1",
-  "author": "",
+  "author": "Weble",
+  "repository": "git://github.com/WebleIT/JBackupManager.git",
   "dependencies": {
   	"akeebabackup" : "*",
   	"node-fs": "*",

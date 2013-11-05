@@ -43,23 +43,6 @@ var Site = function() {
     });
 
     this.hasMany('Backups');
-
-    /*
-  this.property('login', 'string', {required: true});
-  this.property('password', 'string', {required: true});
-  this.property('lastName', 'string');
-  this.property('firstName', 'string');
-
-  this.validatesPresent('login');
-  this.validatesFormat('login', /[a-z]+/, {message: 'Subdivisions!'});
-  this.validatesLength('login', {min: 3});
-  // Use with the name of the other parameter to compare with
-  this.validatesConfirmed('password', 'confirmPassword');
-  // Use with any function that returns a Boolean
-  this.validatesWithFunction('password', function (s) {
-      return s.length > 0;
-  });
-  */
  
     this.getLastBackup = function(callback) {
         var $this = this;
@@ -359,4 +342,3 @@ Site.restartCronjobs = function() {
 exports.Site = Site;
 
 geddy.model.register('Site', Site);
-
