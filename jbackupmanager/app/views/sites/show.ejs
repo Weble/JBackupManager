@@ -21,6 +21,7 @@
         <tr>
             <th>BackupID</th>
             <th>Status</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -29,6 +30,13 @@
         <tr>
             <td><%- backup.backup_id %></td>
             <td><%- backup.status %></td>
+            <td>
+                <button data-trigger="download" data-id="<%- backup.id %>" class="btn btn-mini">Download</button>
+                <div class="progress" style="display:none;" data-id="<%- backup.id %>" >
+                    <div class="bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 00%;">
+                    </div>
+                </div>
+            </td>
         </tr>
         <% }); %>
     </tbody>
@@ -45,3 +53,12 @@
     or
     <%- link_to('Back to index', pathTo.sites) %>
 </div>
+
+<script type="text/javascript">
+jQuery(document).ready(function($){
+    $('[data-trigger="download"]').on('click', function(){
+        $(this).attr('disabled', 'disabled');
+        $('.progress', $(this).parent()).show();
+    });
+});
+</script>

@@ -25,7 +25,8 @@
     "should": ">= 0",
     "semicov": "*",
     "co-generators": "*",
-    "akeebabackup": "*"
+    "akeebabackup": "*",
+    "node-fs": "*"
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha --require test/init.js test/*/*.test.js"

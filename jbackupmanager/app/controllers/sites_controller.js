@@ -73,6 +73,13 @@ action(function backup() {
     this.site.backup(socket());
 });
 
+action(function download() {
+    this.title = 'Site Backup';
+    Backup.find(params.id, function(err, backup){
+        backup.download(socket());
+    });
+});
+
 action(function edit() {
     this.title = 'Site edit';
     switch(params.format) {
