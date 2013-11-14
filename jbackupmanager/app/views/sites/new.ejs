@@ -1,0 +1,18 @@
+<ul class="breadcrumb">
+    <li><a href="/">Home</a> <span class="divider">/</span></li>
+    <li><a href="<%- pathTo.sites() %>">sites</a> <span class="divider">/</span></li>
+    <li class="active"><a href="#">New site</a></li>
+</ul>
+
+<div class="page-header">
+    <h1>New site</h1>
+</div>
+
+<% var form = formFor(site, {action: pathTo.sites(), method: 'POST', id: "site-form", class: 'form-horizontal'}) %>
+<%- form.begin() %>
+<%- include _form %>
+<div class="form-actions">
+    <%- form.submit('<i class="icon-ok icon-white"></i> Create site', {class: 'btn btn-primary'}) %> or
+    <%- linkTo('Cancel', pathTo.sites(), {class: 'btn'}) %>
+</div>
+<%- form.end() %>

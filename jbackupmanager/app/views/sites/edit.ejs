@@ -1,0 +1,18 @@
+<ul class="breadcrumb">
+    <li><a href="/">Home</a> <span class="divider">/</span></li>
+    <li><a href="<%- pathTo.sites() %>">sites</a> <span class="divider">/</span></li>
+    <li class="active"><a href="#">Edit site</a></li>
+</ul>
+
+<div class="page-header">
+    <h1>Edit site</h1>
+</div>
+
+<% var form = formFor(site, {action: pathTo.site(site), method: 'PUT', id: "site-form", class: 'form-horizontal'}) %>
+<%- form.begin() %>
+<%- include _form %>
+<div class="form-actions">
+    <%- form.submit('<i class="icon-ok icon-white"></i> Update site', {class: 'btn btn-primary'}) %> or
+    <%- linkTo('Cancel', pathTo.site(site), {class: 'btn'}) %>
+</div>
+<%- form.end() %>

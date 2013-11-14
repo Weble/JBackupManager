@@ -1,0 +1,47 @@
+<ul class="breadcrumb">
+    <li><a href="/">Home</a> <span class="divider">/</span></li>
+    <li><a href="<%- pathTo.sites %>">sites</a> <span class="divider">/</span></li>
+    <li class="active"><a href="#">Details of site</a></li>
+</ul>
+
+<div class="page-header">
+    <h1>Details of site</h1>
+</div>
+
+<table class="table table-bordered">
+    <tbody>
+        <tr><th>Name</th><td><%= site.name %></td></tr>
+        <tr><th>Url</th><td><%= site.url %></td></tr>
+    </tbody>
+</table>
+
+<% if (site.backups_list.length > 0) { %>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>BackupID</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+     <% site.backups_list.forEach(function(backup){ 
+    %>
+        <tr>
+            <td><%- backup.backup_id %></td>
+            <td><%- backup.status %></td>
+        </tr>
+        <% }); %>
+    </tbody>
+</table>
+<% } else { %>
+<p class="alert alert-block alert-info">
+    <strong>No backups were found.</strong>
+</p>
+<% } %>
+
+<div class="well">
+    <%- link_to('<i class="icon-edit icon-white"></i> Edit', pathTo.edit_site(site), {class: 'btn btn-primary'}) %>
+    <%- link_to('<i class="icon-remove icon-white"></i> Delete', pathTo.site(site), {class: 'btn btn-danger', method: 'delete', remote: true, jsonp: '(function (u) { location.href = u; })'}) %>
+    or
+    <%- link_to('Back to index', pathTo.sites) %>
+</div>

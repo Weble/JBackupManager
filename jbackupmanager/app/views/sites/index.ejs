@@ -1,0 +1,62 @@
+<ul class="breadcrumb">
+    <li><a href="/">Home</a> <span class="divider">/</span></li>
+    <li class="active"><a href="<%- pathTo.sites() %>">sites</a> <span class="divider">/</span></li>
+</ul>
+
+<div class="page-header">
+    <h1>Index of site</h1>
+</div>
+
+<div class="row">
+    <div class="span12">
+        <p><%- link_to('<i class="icon-plus icon-white"></i> New site', pathTo.new_site(), {class: 'btn btn-primary'}) %></>
+    </div>
+</div>
+
+<div class="row">
+    <div class="span12">
+        <% if (sites.length > 0) { %>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Url</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% sites.forEach(function (site) { %>
+                <tr>
+                    <td><strong><%- link_to(site.name, pathTo.site(site)) %></strong></td>
+                    <td><%- site.url %></td>
+                    <td>
+                        <div class="btn-group">
+                            <%- link_to('<i class="icon-edit"></i> Edit', pathTo.edit_site(site), {class: 'btn btn-mini'}) %>
+                            <%- link_to('<i class="icon-remove icon-white"></i> Delete', pathTo.site(site), {class: 'btn btn-mini btn-danger', method: 'delete', remote: true, jsonp: '(function (u) {location.href = u;})'}) %>
+                            <button data-trigger="backup" data-id="<%- site.id %>" class="btn btn-mini">Backup</button>
+                            <div class="progress" style="display:none;" data-id="<%- site.id %>" >
+                                <div class="bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 00%;">
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <% }); %>
+            </tbody>
+        </table>
+        <% } else { %>
+        <p class="alert alert-block alert-info">
+            <strong>No sites were found.</strong>
+        </p>
+        <% } %>
+    </div>
+</div>
+
+<script type="text/javascript">
+jQuery(document).ready(function($){
+    $('[data-trigger="backup"]').on('click', function(){
+        $(this).attr('disabled', 'disabled');
+        $('.progress').show();
+    });
+});
+</script>

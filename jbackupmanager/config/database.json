@@ -1,0 +1,21 @@
+{
+    "development": {
+        "driver": "mysql",
+        "host": "localhost",
+        "post": 3306,
+        "database": "jbackupdatabase",
+        "username": "root",
+        "password": "root"
+    },
+    "test": {
+        "driver": "memory"
+    },
+    "production": {
+        "driver": "mysql",
+        "host": "localhost",
+        "post": 3306,
+        "database": "jbackupmanager",
+        "username": "root",
+        "password": "root"
+    }
+}

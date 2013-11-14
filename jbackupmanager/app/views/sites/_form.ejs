@@ -1,0 +1,19 @@
+<%- errorMessagesFor(site) %>
+<div class="control-group">
+   <%- form.label("name", false, {class: "control-label"}) %>
+   <div class="controls">
+       <%- form.input("name") %>
+   </div>
+</div>
+<div class="control-group">
+	<%- form.label("url", false, {class: "control-label"}) %>
+	<div class="controls">
+	    <%- form.input("url") %>
+	</div>
+</div>
+<div class="control-group">
+	<%- form.label("key", false, {class: "control-label"}) %>
+	<div class="controls">
+	    <%- form.input("key", {type: 'password'}) %>
+	</div>
+</div>
