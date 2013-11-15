@@ -1,4 +1,4 @@
-<%- errorMessagesFor(site) %>
+<%- errorMessagesFor(cron) %>
 <div class="control-group">
    <%- form.label("name", false, {class: "control-label"}) %>
    <div class="controls">
@@ -6,14 +6,15 @@
    </div>
 </div>
 <div class="control-group">
-	<%- form.label("url", false, {class: "control-label"}) %>
+	<%- form.label("quota", false, {class: "control-label"}) %>
 	<div class="controls">
-	    <%- form.input("url") %>
+	    <%- form.input("quota", {type: 'number'}) %>
 	</div>
 </div>
 <div class="control-group">
-	<%- form.label("key", false, {class: "control-label"}) %>
+	<%- form.label("cron", false, {class: "control-label"}) %>
 	<div class="controls">
-	    <%- form.input("key", {type: 'password'}) %>
+	    <%- form.input("cron") %>
 	</div>
 </div>
+ <%- form.input("site_id", {type: 'hidden'}) %>

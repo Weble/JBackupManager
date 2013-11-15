@@ -27,6 +27,8 @@ module.exports = function (compound, Site) {
                     b.status = data.status;
                     b.size = data.total_size;
 
+                    b.download_status = 'not_downloaded';
+
                     var json = JSON.stringify(data);
                     
                     b.info = json;
@@ -70,5 +72,32 @@ module.exports = function (compound, Site) {
         } catch (e) {
             console.log(e);
         }
+    };
+
+    Site.prototype.clearOldBackups = function() {
+        var quota = this.quota ? this.quota : 3;
+        var $this = this;
+
+        this.backups({
+            where: {
+                download_status: 'complete'
+            },
+            skip: quota,
+            order: 'backup_id DESC'
+        }, function(err, backups){
+            backups.forEach(function(backup){
+                var url = $this.url.replace('http://', '');
+                url = url.replace('/', '-');
+
+                var fs = require('fs');
+
+                // File names
+                var file = '/Users/skullbock/Desktop/backups/' + url + '/' + backup.archive;
+                fs.unlink(file, function(){
+                    backup.download_status = 'not_downloaded';
+                    backup.save();
+                });
+            });
+        });
     };
 };

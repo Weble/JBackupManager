@@ -1,0 +1,18 @@
+<ul class="breadcrumb">
+    <li><a href="/">Home</a> <span class="divider">/</span></li>
+    <li><a href="<%- pathTo.crons() %>">crons</a> <span class="divider">/</span></li>
+    <li class="active"><a href="#">New cron</a></li>
+</ul>
+
+<div class="page-header">
+    <h1>New cron</h1>
+</div>
+
+<% var form = formFor(cron, {action: pathTo.crons(), method: 'POST', id: "cron-form", class: 'form-horizontal'}) %>
+<%- form.begin() %>
+<%- include _form %>
+<div class="form-actions">
+    <%- form.submit('<i class="icon-ok icon-white"></i> Create cron', {class: 'btn btn-primary'}) %> or
+    <%- linkTo('Cancel', pathTo.crons(), {class: 'btn'}) %>
+</div>
+<%- form.end() %>

@@ -33,9 +33,22 @@ var Backup = describe('Backup', function () {
     property('finished', Date);
     property('size', Number);
     property('status', String);
+    property('download_status', String);
     property('archive', String);
     property('info', Text);
 });
 
+var Cron = describe('Cron', function () {
+    property('site_id', Number);
+    property('cron', String);
+    property('quota', Number);
+    property('name', String);
+
+    set('restPath', pathTo.crons);
+});
+
 Site.hasMany(Backup,   {as: 'backups',  foreignKey: 'site_id'});
+Site.hasMany(Cron,   {as: 'crons',  foreignKey: 'site_id'});
 Backup.belongsTo(Site,   {as: 'site',  foreignKey: 'site_id'});
+Cron.belongsTo(Site,   {as: 'site',  foreignKey: 'site_id'});
+

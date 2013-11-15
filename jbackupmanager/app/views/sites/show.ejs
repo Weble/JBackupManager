@@ -20,7 +20,8 @@
     <thead>
         <tr>
             <th>BackupID</th>
-            <th>Status</th>
+            <th>Backup Status</th>
+            <th>Download Status</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -30,6 +31,7 @@
         <tr>
             <td><%- backup.backup_id %></td>
             <td><%- backup.status %></td>
+            <td><%- backup.download_status %></td>
             <td>
                 <button data-trigger="download" data-id="<%- backup.id %>" class="btn btn-mini">Download</button>
                 <div class="progress" style="display:none;" data-id="<%- backup.id %>" >
@@ -50,6 +52,7 @@
 <div class="well">
     <%- link_to('<i class="icon-edit icon-white"></i> Edit', pathTo.edit_site(site), {class: 'btn btn-primary'}) %>
     <%- link_to('<i class="icon-remove icon-white"></i> Delete', pathTo.site(site), {class: 'btn btn-danger', method: 'delete', remote: true, jsonp: '(function (u) { location.href = u; })'}) %>
+    <%- link_to('<i class="icon-plus"></i> Add Crons', pathTo.new_cron({site_id: site.id}), {class: 'btn'}) %>
     or
     <%- link_to('Back to index', pathTo.sites) %>
 </div>

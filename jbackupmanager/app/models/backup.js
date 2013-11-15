@@ -4,6 +4,7 @@ module.exports = function(compound, Backup) {
      */
     Backup.prototype.download = function(socket) {
 
+        var $this = this;
         var path = require('path');
         var fs = require('node-fs');
         var akeeba = require('akeebabackup');
@@ -56,13 +57,25 @@ module.exports = function(compound, Backup) {
                         key: site.id,
                         id: $this.id
                     }
+
+                    b.download_status = 'complete';
+                    b.save(function(){
+                        site.clearOldBackups();
+                    });
+
+
+
                     socket.emit('download-completed', info);
                 });
 
 
                 // launch download!
                 download.download(b.backup_id, file);
+
+                b.download_status = 'started';
+                b.save();
             });
         });
-    }
+    };
+
 }
