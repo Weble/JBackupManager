@@ -49,6 +49,9 @@ var Cron = describe('Cron', function () {
 
 Site.hasMany(Backup,   {as: 'backups',  foreignKey: 'site_id'});
 Site.hasMany(Cron,   {as: 'crons',  foreignKey: 'site_id'});
+Cron.hasMany(Backup,   {as: 'backups',  foreignKey: 'cron_id'});
+
+Backup.belongsTo(Cron,   {as: 'cron',  foreignKey: 'cron_id'});
 Backup.belongsTo(Site,   {as: 'site',  foreignKey: 'site_id'});
 Cron.belongsTo(Site,   {as: 'site',  foreignKey: 'site_id'});
 

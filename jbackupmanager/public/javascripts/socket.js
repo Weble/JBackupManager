@@ -8,6 +8,7 @@ jQuery(function ($) {
 	    });
 
 	    window.socket.on('backup-step', function(data){
+	    	$('[data-id="'+data.key+'"].progress').show();
 	        $('[data-id="'+data.key+'"] .bar').css({width: data.percentage + '%'});
 	    });
 
@@ -18,6 +19,7 @@ jQuery(function ($) {
 	    });
 
 	    window.socket.on('download-step', function(data){
+	    	$('[data-id="'+data.id+'"].progress').show();
 	        $('[data-id="'+data.id+'"] .bar').css({width: data.percentage + '%'});
 	    });
 

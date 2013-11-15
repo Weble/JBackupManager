@@ -26,7 +26,9 @@
     "semicov": "*",
     "co-generators": "*",
     "akeebabackup": "*",
-    "node-fs": "*"
+    "node-fs": "*",
+    "cron": "*",
+    "moment": "*"
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha --require test/init.js test/*/*.test.js"

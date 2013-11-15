@@ -3,7 +3,7 @@ module.exports = function (compound, Site) {
 	/**
 	 * Backup
 	 */
-	Site.prototype.backup = function(socket) {
+	Site.prototype.backup = function(socket, cron_id) {
         // Backup
         var akeeba = require('akeebabackup');
         var backup = new akeeba(this.url, this.key);
@@ -16,9 +16,11 @@ module.exports = function (compound, Site) {
             backup.on('completed', function(data) {
 
                 b.save(function(){
-                    socket.emit('backup-completed', {
-                        key: $this.id
-                    });
+                    if (socket) {
+                        socket.emit('backup-completed', {
+                            key: $this.id
+                        });
+                    }
                 });
 
                 backup.getBackupInfo(b.backup_id, function(data){
@@ -34,6 +36,8 @@ module.exports = function (compound, Site) {
                     b.info = json;
 
                     b.save();
+
+                    b.download(socket);
                 });
 
                 // launch download
@@ -45,6 +49,7 @@ module.exports = function (compound, Site) {
                 if (data) {
                     if (data.data) {
 
+                        b.cron_id = cron_id;
                         b.backup_id = data.data.BackupID;
                         b.archive = data.data.Archive;
                     }
@@ -62,7 +67,9 @@ module.exports = function (compound, Site) {
                         };
 
                         // Notify the UI with Socket.IO
-                        socket.emit('backup-step', info);
+                        if (socket) {
+                            socket.emit('backup-step', info);
+                        }
                     }
                 }
             });
@@ -74,30 +81,35 @@ module.exports = function (compound, Site) {
         }
     };
 
-    Site.prototype.clearOldBackups = function() {
-        var quota = this.quota ? this.quota : 3;
-        var $this = this;
+    Site.prototype.clearOldBackups = function(cron) {
+        if (cron) {
+            var quota = cron.quota ? cron.quota : 3;
+            var $this = this;
 
-        this.backups({
-            where: {
-                download_status: 'complete'
-            },
-            skip: quota,
-            order: 'backup_id DESC'
-        }, function(err, backups){
-            backups.forEach(function(backup){
-                var url = $this.url.replace('http://', '');
-                url = url.replace('/', '-');
+            this.backups({
+                where: {
+                    download_status: 'complete',
+                    cron_id: cron.id
+                },
+                skip: quota,
+                limit: 9999,
+                order: 'backup_id DESC'
+            }, function(err, backups){
+                console.log(backups);
+                backups.forEach(function(backup){
+                    var url = $this.url.replace('http://', '');
+                    url = url.replace('/', '-');
 
-                var fs = require('fs');
+                    var fs = require('fs');
 
-                // File names
-                var file = '/Users/skullbock/Desktop/backups/' + url + '/' + backup.archive;
-                fs.unlink(file, function(){
-                    backup.download_status = 'not_downloaded';
-                    backup.save();
+                    // File names
+                    var file = '/Users/skullbock/Desktop/backups/' + url + '/' + backup.archive;
+                    fs.unlink(file, function(){
+                        backup.download_status = 'not_downloaded';
+                        backup.save();
+                    });
                 });
             });
-        });
+        }
     };
 };

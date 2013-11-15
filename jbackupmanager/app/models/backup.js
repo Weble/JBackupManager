@@ -60,7 +60,11 @@ module.exports = function(compound, Backup) {
 
                     b.download_status = 'complete';
                     b.save(function(){
-                        site.clearOldBackups();
+                        b.cron(function(err, cron){
+                            if (!err && cron) {
+                                site.clearOldBackups(cron);
+                            }
+                        });
                     });
 
 

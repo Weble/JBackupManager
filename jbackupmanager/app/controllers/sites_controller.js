@@ -154,8 +154,30 @@ function loadSite() {
 
 function loadSiteBackups() {
     var $this = this;
+    var moment = require('moment');
     this.site.backups({limit: 20, order: 'started DESC'}, function(err, data){
         $this.site.backups_list = data;
-        next();
+
+        $this.site.backups_list.forEach(function(backup){
+            backup.cron(function(err, c){
+                if (!err && c) {
+                    backup.cron_name = c.name;
+                }
+            });
+        });
+
+        $this.site.crons({limit: 20}, function(err, data){
+            $this.site.crons_list = data;
+            $this.site.nextbackup = null;
+
+            $this.site.crons_list.forEach(function(c){
+                c.cronjob = {};
+                if (compound.cronjobs && compound.cronjobs[c.id]) {
+                    c.cronjob = compound.cronjobs[c.id];
+                    c.nextbackup = moment(c.cronjob.cronTime.sendAt()).format('DD/MM/YY hh:mm:ss');
+                }
+            });
+            next();
+        });
     });
 }

@@ -22,6 +22,7 @@
             <th>BackupID</th>
             <th>Backup Status</th>
             <th>Download Status</th>
+            <th>Cron Origin</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -30,8 +31,20 @@
     %>
         <tr>
             <td><%- backup.backup_id %></td>
-            <td><%- backup.status %></td>
-            <td><%- backup.download_status %></td>
+            <td>
+                <% if (backup.status == 'complete'){ %>
+                    <span class="label label-success">Complete</span>
+                <% } else { %>
+                    <span class="label label-error"><%- backup.status %></span>
+                <% } %>
+            </td>
+            <td>
+                <% if (backup.download_status == 'complete'){ %>
+                    <span class="label label-success">Complete</span>
+                <% } else { %>
+                    <span class="label"><%- backup.download_status %></span>
+                <% } %>
+            <td><%- backup.cron_name ? backup.cron_name : 'Manual' %></td>
             <td>
                 <button data-trigger="download" data-id="<%- backup.id %>" class="btn btn-mini">Download</button>
                 <div class="progress" style="display:none;" data-id="<%- backup.id %>" >
@@ -46,6 +59,32 @@
 <% } else { %>
 <p class="alert alert-block alert-info">
     <strong>No backups were found.</strong>
+</p>
+<% } %>
+
+<% if (site.crons_list.length > 0) { %>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Cron</th>
+            <th>Quota</th>
+            <th>Next Backup</th>
+        </tr>
+    </thead>
+    <tbody>
+     <% site.crons_list.forEach(function(cron){ 
+    %>
+        <tr>
+            <td><%- cron.name %></td>
+            <td><%- cron.quota %></td>
+            <td><%- cron.nextbackup %></td>
+        </tr>
+        <% }); %>
+    </tbody>
+</table>
+<% } else { %>
+<p class="alert alert-block alert-info">
+    <strong>No Cron Jobs were found.</strong>
 </p>
 <% } %>
 
