@@ -80,6 +80,7 @@
             <td><%- cron.quota %></td>
             <td><%- cron.nextbackup %></td>
             <td>
+                <a class="btn btn-mini" href="<%- pathTo.edit_cron(cron) %>">Edit</a>
                 <button class="btn btn-mini btn-danger" data-format="json" data-trigger="deleteCron" data-id="<%- cron.id %>">
                     Delete
                 </button>

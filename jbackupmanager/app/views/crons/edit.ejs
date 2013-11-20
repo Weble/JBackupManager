@@ -13,6 +13,6 @@
 <%- include _form %>
 <div class="form-actions">
     <%- form.submit('<i class="icon-ok icon-white"></i> Update cron', {class: 'btn btn-primary'}) %> or
-    <%- linkTo('Cancel', pathTo.cron(cron), {class: 'btn'}) %>
+    <%- linkTo('Cancel', pathTo.site(cron.site()), {class: 'btn'}) %>
 </div>
 <%- form.end() %>
