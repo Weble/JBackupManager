@@ -1,5 +1,8 @@
 load('application');
 
+var cronjob = require('cron').CronJob;
+var akeeba = require('akeebabackup');
+
 before(loadCron, {
     only: ['show', 'edit', 'update', 'destroy']
 });
@@ -15,22 +18,19 @@ action(function create() {
     Cron.create(req.body.Cron, function (err, cron) {
 
         if (!err && cron) {
-            if (compound.cronjobs[cron.id]) {
-                compound.cronjobs[cron.id].stop();
-                compound.cronjobs[cron.id] = new cronjob(
-                    cron.cron,
-                    function() {
-                        this.cron_id = cron.id;
-                        site.backup(compound.socket, cron.id);
-                    },
-                    function() {
+            compound.cronjobs[cron.id] = new cronjob(
+                cron.cron,
+                function() {
+                    this.cron_id = cron.id;
+                    site.backup(compound.socket, cron.id);
+                },
+                function() {
 
-                    },
-                    true, // Start now
-                    null,
-                    cron // Context
-                );
-            }
+                },
+                true, // Start now
+                null,
+                cron // Context
+            );
         }
 
         respondTo(function (format) {
@@ -102,8 +102,21 @@ action(function update() {
         if (!err && cron) {
             if (compound.cronjobs[cron.id]) {
                 compound.cronjobs[cron.id].stop();
-                compound.cronjobs[cron.id] = null;
             }
+
+            compound.cronjobs[cron.id] = new cronjob(
+                cron.cron,
+                function() {
+                    this.cron_id = cron.id;
+                    site.backup(compound.socket, cron.id);
+                },
+                function() {
+
+                },
+                true, // Start now
+                null,
+                cron // Context
+            );
         }
 
         respondTo(function (format) {
