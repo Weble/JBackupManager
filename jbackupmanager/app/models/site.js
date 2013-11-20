@@ -103,7 +103,7 @@ module.exports = function (compound, Site) {
                     var fs = require('fs');
 
                     // File names
-                    var file = '/Users/skullbock/Desktop/backups/' + url + '/' + backup.archive;
+                    var file = compound.folder + url + '/' + backup.archive;
                     fs.unlink(file, function(){
                         backup.download_status = 'not_downloaded';
                         backup.save();

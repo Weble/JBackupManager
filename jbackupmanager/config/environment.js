@@ -46,6 +46,8 @@ module.exports = function(compound) {
 
         compound.cronjobs = [];
 
+        compound.folder = '/home/skullbock/nodebackups/';
+
         compound.models.Cron.all(function(err, cronjobs) {
             cronjobs.forEach(function(cron){
                 cron.site(function(err, site){

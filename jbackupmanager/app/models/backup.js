@@ -24,7 +24,7 @@ module.exports = function(compound, Backup) {
             url = url.replace('/', '-');
 
             // File names
-            var file = '/Users/skullbock/Desktop/backups/' + url + '/' + b.archive;
+            var file = compound.folder + url + '/' + b.archive;
             var folder = path.normalize(path.dirname(file));
 
             // Create directory if necessary

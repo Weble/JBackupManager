@@ -13,6 +13,26 @@ action('new', function () {
 
 action(function create() {
     Cron.create(req.body.Cron, function (err, cron) {
+
+        if (!err && cron) {
+            if (compound.cronjobs[cron.id]) {
+                compound.cronjobs[cron.id].stop();
+                compound.cronjobs[cron.id] = new cronjob(
+                    cron.cron,
+                    function() {
+                        this.cron_id = cron.id;
+                        site.backup(compound.socket, cron.id);
+                    },
+                    function() {
+
+                    },
+                    true, // Start now
+                    null,
+                    cron // Context
+                );
+            }
+        }
+
         respondTo(function (format) {
             format.json(function () {
                 if (err) {
@@ -30,7 +50,7 @@ action(function create() {
                     });
                 } else {
                     flash('info', 'Cron created');
-                    redirect(path_to.crons);
+                    redirect(path_to.site(cron.site()));
                 }
             });
         });
@@ -78,6 +98,14 @@ action(function update() {
     var cron = this.cron;
     this.title = 'Edit cron details';
     this.cron.updateAttributes(body.Cron, function (err) {
+
+        if (!err && cron) {
+            if (compound.cronjobs[cron.id]) {
+                compound.cronjobs[cron.id].stop();
+                compound.cronjobs[cron.id] = null;
+            }
+        }
+
         respondTo(function (format) {
             format.json(function () {
                 if (err) {
@@ -107,6 +135,9 @@ action(function destroy() {
                     send({code: 500, error: error});
                 } else {
                     send({code: 200});
+                    if (compound.socket) {
+                        compound.socket.emit('refresh');
+                    }
                 }
             });
             format.html(function () {

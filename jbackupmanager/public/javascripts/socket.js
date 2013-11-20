@@ -7,6 +7,11 @@ jQuery(function ($) {
 	    	window.socket.emit(data.trigger, data);    
 	    });
 
+	    window.socket.on('refresh', function(){
+	    	console.log('reload');
+	    	window.location.reload(false);
+	    })
+
 	    window.socket.on('backup-step', function(data){
 	    	$('[data-id="'+data.key+'"].progress').show();
 	        $('[data-id="'+data.key+'"] .bar').css({width: data.percentage + '%'});
