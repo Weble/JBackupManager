@@ -44,7 +44,20 @@ action(function create() {
 
 action(function index() {
     this.title = 'Sites index';
-    Site.all(function (err, sites) {
+    Site.all(function (err, tmpsites) {
+
+        var sites = tmpsites;
+
+        sites.forEach(function(site, i){
+            sites[i].last_backup = null;
+            site.backups({limit: 1, order: 'started DESC'}, function(err, data){
+                if (!err && data && data.length > 0) {
+                    site.last_backup = 123;
+                }
+                console.log(site);
+            });
+        })
+
         switch (params.format) {
             case "json":
                 send({code: 200, data: sites});
