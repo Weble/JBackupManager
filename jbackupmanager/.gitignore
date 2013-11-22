@@ -16,5 +16,5 @@ log/*.log
 coverage.html
 .settings
 doc
-config/*
+config/database.json
 
